@@ -71,6 +71,10 @@ All changes apply instantly as inline styles. Drop it in any section, tweak, clo
 - Tailwind CSS
 - Vite
 
+## Compatibility
+
+`EditHelper` has no dependency on Tailwind. It reads styles via the browser's `getComputedStyle()`, so it works with any styling approach — Tailwind, plain CSS, CSS Modules, styled-components, etc.
+
 ## Status
 
 Work in progress. Current focus is the `EditHelper` inspector component.
