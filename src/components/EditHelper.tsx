@@ -179,6 +179,15 @@ function PropRow({ prop, value, onChange }: { prop: Prop; value: string; onChang
 export function EditHelper() {
   const wrapRef = useRef<HTMLDivElement>(null)
   const [open, setOpen] = useState(false)
+
+  // Auto-set positioning context on parent if missing, so no need for `relative` class
+  useEffect(() => {
+    const parent = wrapRef.current?.parentElement
+    if (!parent) return
+    if (getComputedStyle(parent).position === 'static') {
+      parent.style.position = 'relative'
+    }
+  }, [])
   const [nodes, setNodes] = useState<FlatNode[]>([])
   const [selId, setSelId] = useState<number | null>(null)
   const [vals, setVals] = useState<Record<string, string>>({})
