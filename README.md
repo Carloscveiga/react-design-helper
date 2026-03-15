@@ -35,7 +35,7 @@ function App() {
 
 ```
 
-You can add `<EditHelper />` inside any multiple sections no extra setup needed:
+You can add `<EditHelper />` inside multiple sections no extra setup needed:
 
 ```tsx
 <section className="...">
