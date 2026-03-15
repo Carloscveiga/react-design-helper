@@ -1,6 +1,6 @@
 # react-design
 
-> A work-in-progress React dev helper — inspect and live-tweak your UI without leaving the browser.
+> A work-in-progress React dev helper, inspect and live-tweak your UI without leaving the browser.
 
 ## What is this?
 
