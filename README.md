@@ -6,11 +6,36 @@
 
 Working with Three.js, you get helpers that output live camera positions so you can tweak values in real time and bake them into your code. This project brings that same idea to React.
 
-Instead of jumping to Figma, opening DevTools, or digging through computed styles — you drop an `<EditHelper />` component into any section and get an inline inspector panel that lets you select elements, read their styles, and edit them live.
+Instead of jumping to Figma, opening DevTools, or digging through computed styles, you drop an `<EditHelper />` component into any section and get an inline inspector panel that lets you select elements, read their styles, and edit them live.
 
 ## How it works
 
-Add `<EditHelper />` inside any section — no extra setup needed:
+All you need is the component in this project called EditHelper.tsx.
+You add it to your project and just import it in the section you want it edited.
+
+You can check the example on the file App.tsx where we import the component
+
+```
+import { EditHelper } from './components/EditHelper'
+```
+
+then we add the component into the section we want edited. 
+
+```
+function App() {
+  return (
+
+    <>
+      <section className="relative w-full min-h-screen bg-white flex items-center justify-center border-b border-gray-200">
+
+        <EditHelper />
+
+      </section>
+    <>
+
+```
+
+You can add `<EditHelper />` inside any multiple sections no extra setup needed:
 
 ```tsx
 <section className="...">

@@ -5,7 +5,9 @@ function App() {
 
     <>
       <section className="relative w-full min-h-screen bg-white flex items-center justify-center border-b border-gray-200">
+
         <EditHelper />
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-gray-900 mb-6">
             Build Something Amazing
