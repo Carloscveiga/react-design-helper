@@ -1,4 +1,4 @@
-# react-design
+# React-Design-Helper
 
 > A work-in-progress React dev helper, inspect and live-tweak your UI without leaving the browser.
 
@@ -58,6 +58,12 @@ Click **⚙ inspect** → a panel slides in from the right with:
   - Effects (opacity, box shadow)
 
 All changes apply instantly as inline styles. Drop it in any section, tweak, close when done.
+
+## Examples
+
+![Example 1](public/example1.png)
+
+![Example 2](public/example2.png)
 
 ## Stack
 
