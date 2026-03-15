@@ -10,7 +10,7 @@ Instead of jumping to Figma, opening DevTools, or digging through computed style
 
 ## How it works
 
-All you need is the component in this project called EditHelper.tsx.
+All you need is the component [`EditHelper.tsx`](src/components/EditHelper.tsx).
 You add it to your project and just import it in the section you want it edited.
 
 You can check the example on the file App.tsx where we import the component
