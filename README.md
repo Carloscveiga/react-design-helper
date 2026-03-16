@@ -14,6 +14,7 @@ Pick the version that matches your project:
 
 - TypeScript → [`EditHelper.tsx`](src/components/EditHelper.tsx)
 - JavaScript → [`EditHelper.jsx`](src/components/EditHelper.jsx)
+
 You add it to your project and just import it in the section you want it edited.
 
 You can check the example on the file App.tsx where we import the component
@@ -56,11 +57,12 @@ Click **⚙ inspect** → a panel slides in from the right with:
   - Sizing (width, height, max-width, min-height)
   - Padding / Margin
   - Typography (font size, weight, line height, text align, tracking)
-  - Colors (background, text)
+  - Colors (background color, text color, background image)
   - Border (radius, width, color)
   - Effects (opacity, box shadow)
 
 All changes apply instantly as inline styles. Drop it in any section, tweak, close when done.
+
 
 ## Examples
 
@@ -81,3 +83,20 @@ All changes apply instantly as inline styles. Drop it in any section, tweak, clo
 ## Status
 
 Work in progress. Current focus is the `EditHelper` inspector component.
+
+### Added background image functionality
+
+Inside the **Colors** group, the **Bg Image** row now lets you set a background image two ways:
+
+- **Paste a URL** into the text field and press Enter or click away
+- **Click 📁** to pick a local file — it gets converted to a data URL automatically
+
+A thumbnail preview appears once an image is set. Hit **✕** to clear it.
+
+Three extra controls appear automatically when an image is active:
+
+| Control | Options |
+|---|---|
+| Bg Size | `cover`, `contain`, `auto`, `100% 100%`, `50%`, `100%` |
+| Bg Pos | `center`, `top`, `bottom`, `left`, `right`, `top center`, `bottom center` |
+| Bg Repeat | `no-repeat`, `repeat`, `repeat-x`, `repeat-y` |
