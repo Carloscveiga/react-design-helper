@@ -29,7 +29,7 @@ interface Prop {
   key: string
   label: string
   group: string
-  type: 'color' | 'range' | 'select' | 'text'
+  type: 'color' | 'range' | 'select' | 'text' | 'image'
   options?: string[]
   min?: number; max?: number; step?: number; unit?: string
   cond?: (s: CSSStyleDeclaration) => boolean
@@ -100,6 +100,20 @@ const PROPS: Prop[] = [
     get: s => rgbToHex(s.backgroundColor), set: (el, v) => { el.style.backgroundColor = v } },
   { key: 'color', label: 'Text', group: 'Colors', type: 'color',
     get: s => rgbToHex(s.color), set: (el, v) => { el.style.color = v } },
+  { key: 'backgroundImage', label: 'Bg Image', group: 'Colors', type: 'image',
+    get: s => s.backgroundImage, set: (el, v) => { el.style.backgroundImage = v } },
+  { key: 'backgroundSize', label: 'Bg Size', group: 'Colors', type: 'select',
+    options: ['cover', 'contain', 'auto', '100% 100%', '50%', '100%'],
+    cond: s => s.backgroundImage !== 'none',
+    get: s => s.backgroundSize, set: (el, v) => { el.style.backgroundSize = v } },
+  { key: 'backgroundPosition', label: 'Bg Pos', group: 'Colors', type: 'select',
+    options: ['center', 'top', 'bottom', 'left', 'right', 'top center', 'bottom center'],
+    cond: s => s.backgroundImage !== 'none',
+    get: s => s.backgroundPosition, set: (el, v) => { el.style.backgroundPosition = v } },
+  { key: 'backgroundRepeat', label: 'Bg Repeat', group: 'Colors', type: 'select',
+    options: ['no-repeat', 'repeat', 'repeat-x', 'repeat-y'],
+    cond: s => s.backgroundImage !== 'none',
+    get: s => s.backgroundRepeat, set: (el, v) => { el.style.backgroundRepeat = v } },
   // Border
   { key: 'borderRadius', label: 'Radius', group: 'Border', type: 'range', min: 0, max: 50, unit: 'px',
     get: s => String(px(s.borderRadius)), set: (el, v) => { el.style.borderRadius = `${v}px` } },
@@ -130,6 +144,66 @@ function walk(root: Element, skip: Element, depth: number, out: FlatNode[], coun
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
+
+function BgImageInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const fileRef = useRef<HTMLInputElement>(null)
+  // Extract raw URL from url("...") for the text input
+  const rawUrl = value && value !== 'none'
+    ? value.replace(/^url\(["']?/, '').replace(/["']?\)$/, '')
+    : ''
+  const [inputVal, setInputVal] = useState(rawUrl)
+
+  // Sync input when selected element changes
+  useEffect(() => { setInputVal(rawUrl) }, [value])
+
+  function apply(url: string) {
+    onChange(url ? `url("${url}")` : 'none')
+  }
+
+  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = ev => { if (ev.target?.result) onChange(`url("${ev.target.result}")`) }
+    reader.readAsDataURL(file)
+  }
+
+  return (
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
+      {/* Thumbnail preview */}
+      {value && value !== 'none' && (
+        <div style={{
+          width: '100%', height: 48, borderRadius: 4,
+          backgroundImage: value, backgroundSize: 'cover', backgroundPosition: 'center',
+          border: '1px solid #3f3f46',
+        }} />
+      )}
+      <div style={{ display: 'flex', gap: 4 }}>
+        <input
+          type="text"
+          placeholder="paste image URL..."
+          value={inputVal}
+          onChange={e => setInputVal(e.target.value)}
+          onBlur={() => apply(inputVal)}
+          onKeyDown={e => e.key === 'Enter' && apply(inputVal)}
+          style={{ flex: 1, background: '#27272a', color: '#e4e4e7', border: '1px solid #3f3f46',
+            borderRadius: 4, fontSize: 10, fontFamily: 'monospace', padding: '2px 6px' }}
+        />
+        <button onClick={() => fileRef.current?.click()}
+          style={{ background: '#27272a', border: '1px solid #3f3f46', borderRadius: 4,
+            color: '#a1a1aa', cursor: 'pointer', fontSize: 11, padding: '0 6px' }}
+          title="Pick local file">📁</button>
+        {value && value !== 'none' && (
+          <button onClick={() => { setInputVal(''); onChange('none') }}
+            style={{ background: '#27272a', border: '1px solid #3f3f46', borderRadius: 4,
+              color: '#71717a', cursor: 'pointer', fontSize: 11, padding: '0 6px' }}
+            title="Remove image">✕</button>
+        )}
+        <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} style={{ display: 'none' }} />
+      </div>
+    </div>
+  )
+}
 
 function PropRow({ prop, value, onChange }: { prop: Prop; value: string; onChange: (v: string) => void }) {
   return (
@@ -169,6 +243,10 @@ function PropRow({ prop, value, onChange }: { prop: Prop; value: string; onChang
         <input type="text" value={value} onChange={e => onChange(e.target.value)}
           style={{ flex: 1, background: '#27272a', color: '#e4e4e7', border: '1px solid #3f3f46',
             borderRadius: 4, fontSize: 10, fontFamily: 'monospace', padding: '2px 6px' }} />
+      )}
+
+      {prop.type === 'image' && (
+        <BgImageInput value={value} onChange={onChange} />
       )}
     </div>
   )
