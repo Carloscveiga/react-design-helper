@@ -52,6 +52,7 @@ You can add `<EditHelper />` inside multiple sections no extra setup needed:
     <div>...</div>
     <div>
       <EditHelper />
+      <div>...</div>
     </div>
   </div>
 </section>
