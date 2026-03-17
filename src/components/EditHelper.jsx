@@ -389,7 +389,7 @@ export function EditHelper() {
       {open && (
         <div style={{
           position: 'fixed', top: 0, right: 0, bottom: 0,
-          width: 280, background: '#18181b',
+          width: 320, background: '#18181b',
           borderLeft: '1px solid #3f3f46',
           display: 'flex', flexDirection: 'column',
           fontFamily: 'monospace', fontSize: 11,
