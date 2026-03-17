@@ -2,6 +2,22 @@
 
 > A work-in-progress React dev helper, inspect and live-tweak your UI without leaving the browser.
 
+## Installation
+
+```bash
+npm install react-design-helper
+```
+
+Then import the component:
+
+```tsx
+import { EditHelper } from 'react-design-helper'
+```
+
+Works with TypeScript and plain JavaScript. No Tailwind required.
+
+---
+
 ## What is this?
 
 Working with Three.js, you get helpers that output live camera positions so you can tweak values in real time and bake them into your code. This project brings that same idea to React.
@@ -10,17 +26,15 @@ Instead of jumping to Figma, opening DevTools, or digging through computed style
 
 ## How it works
 
-Pick the version that matches your project:
+Install via npm (above) or copy the source file directly into your project if you want to customise it:
 
 - TypeScript → [`EditHelper.tsx`](src/components/EditHelper.tsx)
 - JavaScript → [`EditHelper.jsx`](src/components/EditHelper.jsx)
 
-You add it to your project and just import it in the section you want it edited.
-
 You can check the example on the file App.tsx where we import the component
 
 ```
-import { EditHelper } from './components/EditHelper'
+import { EditHelper } from 'react-design-helper'
 ```
 
 then we add the component into the section we want edited. 
