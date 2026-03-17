@@ -45,6 +45,14 @@ You can add `<EditHelper />` inside multiple sections no extra setup needed:
 <section className="...">
   <EditHelper />
   <div>...</div>
+  <div>
+    <EditHelper />
+    <div>...</div>
+    <div>...</div>
+    <div>
+      <EditHelper />
+    </div>
+  </div>
 </section>
 ```
 
