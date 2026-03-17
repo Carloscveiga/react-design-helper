@@ -44,13 +44,13 @@ const PROPS = [
     cond: s => s.display.includes('flex') || s.display === 'grid',
     get: s => String(px(s.gap)), set: (el, v) => { el.style.gap = `${v}px` } },
   // Sizing
-  { key: 'width', label: 'Width', group: 'Sizing', type: 'text',
+  { key: 'width', label: 'Width', group: 'Sizing', type: 'size',
     get: s => s.width, set: (el, v) => { el.style.width = v } },
-  { key: 'height', label: 'Height', group: 'Sizing', type: 'text',
+  { key: 'height', label: 'Height', group: 'Sizing', type: 'size',
     get: s => s.height, set: (el, v) => { el.style.height = v } },
-  { key: 'maxWidth', label: 'Max Width', group: 'Sizing', type: 'text',
+  { key: 'maxWidth', label: 'Max Width', group: 'Sizing', type: 'size',
     get: s => s.maxWidth, set: (el, v) => { el.style.maxWidth = v } },
-  { key: 'minHeight', label: 'Min Height', group: 'Sizing', type: 'text',
+  { key: 'minHeight', label: 'Min Height', group: 'Sizing', type: 'size',
     get: s => s.minHeight, set: (el, v) => { el.style.minHeight = v } },
   // Padding
   { key: 'paddingTop', label: 'Top', group: 'Padding', type: 'range', min: 0, max: 120, unit: 'px',
@@ -129,6 +129,41 @@ function walk(root, skip, depth, out, counter) {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
+const inputStyle = {
+  background: '#27272a', color: '#e4e4e7', border: '1px solid #3f3f46',
+  borderRadius: 4, fontSize: 10, fontFamily: 'monospace', padding: '2px 4px', width: '100%',
+}
+
+function SizeInput({ value, onChange }) {
+  const numPx = Math.round(parseFloat(value)) || 0
+  const numRem = parseFloat((numPx / 16).toFixed(2))
+  const sliderVal = Math.min(Math.max(numPx, 0), 2000)
+
+  return (
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <input
+        type="range" min={0} max={2000} value={sliderVal}
+        onChange={e => onChange(`${e.target.value}px`)}
+        style={{ width: '100%', accentColor: '#6366f1', height: 4, marginTop: 4 }}
+      />
+      <div style={{ display: 'flex', gap: 4 }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 3 }}>
+          <input type="number" value={numPx} min={0}
+            onChange={e => onChange(`${e.target.value}px`)}
+            style={inputStyle} />
+          <span style={{ color: '#52525b', fontSize: 9, flexShrink: 0 }}>px</span>
+        </div>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 3 }}>
+          <input type="number" value={numRem} step={0.25} min={0}
+            onChange={e => onChange(`${Math.round(parseFloat(e.target.value) * 16)}px`)}
+            style={inputStyle} />
+          <span style={{ color: '#52525b', fontSize: 9, flexShrink: 0 }}>rem</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function BgImageInput({ value, onChange }) {
   const fileRef = useRef(null)
   const rawUrl = value && value !== 'none'
@@ -187,9 +222,10 @@ function BgImageInput({ value, onChange }) {
 }
 
 function PropRow({ prop, value, onChange }) {
+  const isSize = prop.type === 'size'
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '3px 0', minHeight: 26 }}>
-      <span style={{ width: 74, fontSize: 10, color: '#71717a', fontFamily: 'monospace', flexShrink: 0 }}>
+    <div style={{ display: 'flex', alignItems: isSize ? 'flex-start' : 'center', gap: 6, padding: isSize ? '8px 0' : '3px 0', minHeight: 26 }}>
+      <span style={{ width: 74, fontSize: 10, color: '#71717a', fontFamily: 'monospace', flexShrink: 0, paddingTop: isSize ? 5 : 0 }}>
         {prop.label}
       </span>
 
@@ -228,6 +264,10 @@ function PropRow({ prop, value, onChange }) {
 
       {prop.type === 'image' && (
         <BgImageInput value={value} onChange={onChange} />
+      )}
+
+      {prop.type === 'size' && (
+        <SizeInput value={value} onChange={onChange} />
       )}
     </div>
   )
@@ -268,6 +308,16 @@ export function EditHelper() {
     selectNode(all[0], all)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
+
+  // Re-read all values whenever the selected element resizes
+  useEffect(() => {
+    const node = nodes.find(n => n.id === selId)
+    if (!node) return
+    const observer = new ResizeObserver(() => setVals(readVals(node.el)))
+    observer.observe(node.el)
+    return () => observer.disconnect()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selId, nodes])
 
   function readVals(el) {
     const s = getComputedStyle(el)

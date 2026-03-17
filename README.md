@@ -104,3 +104,13 @@ Three extra controls appear automatically when an image is active:
 | Bg Size | `cover`, `contain`, `auto`, `100% 100%`, `50%`, `100%` |
 | Bg Pos | `center`, `top`, `bottom`, `left`, `right`, `top center`, `bottom center` |
 | Bg Repeat | `no-repeat`, `repeat`, `repeat-x`, `repeat-y` |
+
+### Improved Sizing controls
+
+The **Sizing** group (Width, Height, Max Width, Min Height) now has a dedicated control instead of a plain text input:
+
+- **Slider**  drag to scrub the value visually
+- **px input**  type an exact pixel value
+- **rem input**  type in rem units, automatically converts to px and stays in sync
+
+All three controls are linked, changing any one updates the others.
