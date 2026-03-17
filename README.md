@@ -25,7 +25,7 @@ import { EditHelper } from './components/EditHelper'
 
 then we add the component into the section we want edited. 
 
-```
+```tsx
 function App() {
   return (
 
@@ -36,7 +36,6 @@ function App() {
 
       </section>
     <>
-
 ```
 
 You can add `<EditHelper />` inside multiple sections no extra setup needed:
