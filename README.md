@@ -36,6 +36,8 @@ function App() {
 
       </section>
     <>
+  )
+}
 ```
 
 You can add `<EditHelper />` inside multiple sections no extra setup needed:
