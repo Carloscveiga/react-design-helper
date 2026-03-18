@@ -114,7 +114,7 @@ All changes apply instantly as inline styles. Drop it in any section, tweak, clo
 
 ## ⚠️ Development Only
 
-This tool is intended for **development environments only**. Do not include it in production bundles. It manipulates the live DOM and reads computed styles at runtime — this has no place in a shipped product.
+This tool is intended for **development environments only**. Do not include it in production bundles. It manipulates the live DOM and reads computed styles at runtime this has no place in a shipped product.
 
 If you are using a bundler like Vite or webpack, make sure it is only imported conditionally or tree-shaken out of your production build:
 
