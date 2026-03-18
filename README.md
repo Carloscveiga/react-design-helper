@@ -1,6 +1,6 @@
 # React-Design-Helper
 
-> Live UI inspector and style editor for React. Select any element, tweak its styles in real time, and copy the values into your code — no Figma, no DevTools tab required.
+> Live UI inspector and style editor for React. Select any element, tweak its styles in real time, and copy the values into your code no 3rd party applications, no DevTools tab required.
 
 ## Installation
 
@@ -126,7 +126,7 @@ If you are using a bundler like Vite or webpack, make sure it is only imported c
 
 ## License
 
-[Apache 2.0](LICENSE) — Copyright 2026 CV-WebWorks
+[Apache 2.0](LICENSE)  Copyright 2026 CV-WebWorks
 
 ---
 
