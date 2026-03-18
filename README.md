@@ -103,9 +103,27 @@ All changes apply instantly as inline styles. Drop it in any section, tweak, clo
 
 `EditHelper` has no dependency on Tailwind. It reads styles via the browser's `getComputedStyle()`, so it works with any styling approach. Tailwind, plain CSS, CSS Modules, styled-components, etc.
 
+## ⚠️ Development Only
+
+This tool is intended for **development environments only**. Do not include it in production bundles. It manipulates the live DOM and reads computed styles at runtime — this has no place in a shipped product.
+
+If you are using a bundler like Vite or webpack, make sure it is only imported conditionally or tree-shaken out of your production build:
+
+```tsx
+{import.meta.env.DEV && <EditHelper />}
+```
+
+---
+
 ## License
 
 [Apache 2.0](LICENSE) — Copyright 2026 CV-WebWorks
+
+---
+
+## Legal
+
+React is a trademark of Meta Platforms, Inc. This project is an independent open-source tool and is not affiliated with, endorsed by, or sponsored by Meta.
 
 ## Status
 
