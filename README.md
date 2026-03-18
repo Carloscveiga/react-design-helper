@@ -31,7 +31,7 @@ Works with TypeScript and plain JavaScript. No Tailwind required.
 
 Drop `<EditHelper />` into any section of your React project. Click **⚙ inspect** and a panel slides in showing every element in that section as a tree. Select any element, a `div`, `h1`, `button`, whatever, and instantly edit its styles: font size, colors, spacing, layout, borders, background images, and more. Every change reflects on screen in real time.
 
-No Figma. No DevTools. No back-and-forth between tools. Just click, tweak, and copy the values you want into your code.
+No 3rd party tools. No DevTools. No back-and-forth between tools. Just click, tweak, and copy the values you want into your code.
 
 ## How it works
 
