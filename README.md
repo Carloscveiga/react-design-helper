@@ -5,7 +5,14 @@
 ## Installation
 
 ```bash
+# npm
 npm install react-design-helper
+
+# pnpm
+pnpm add react-design-helper
+
+# yarn
+yarn add react-design-helper
 ```
 
 Then import the component:
