@@ -74,9 +74,9 @@ You can add `<EditHelper />` inside multiple sections no extra setup needed:
 
 Click **⚙ inspect** → a panel slides in from the right with:
 
-- **Element tree** — every child element listed with indentation, click any to select it
-- **Live highlight** — selected element gets a purple outline on screen
-- **Property groups** — contextual controls for the selected element:
+- **Element tree**  every child element listed with indentation, click any to select it
+- **Live highlight**  selected element gets a purple outline on screen
+- **Property groups**  contextual controls for the selected element:
   - Layout (display, flex direction, justify, align, gap)
   - Sizing (width, height, max-width, min-height)
   - Padding / Margin
@@ -96,13 +96,12 @@ All changes apply instantly as inline styles. Drop it in any section, tweak, clo
 
 ## Stack
 
-- React + TypeScript
-- Tailwind CSS
+- React
 - Vite
 
 ## Compatibility
 
-`EditHelper` has no dependency on Tailwind. It reads styles via the browser's `getComputedStyle()`, so it works with any styling approach — Tailwind, plain CSS, CSS Modules, styled-components, etc.
+`EditHelper` has no dependency on Tailwind. It reads styles via the browser's `getComputedStyle()`, so it works with any styling approach. Tailwind, plain CSS, CSS Modules, styled-components, etc.
 
 ## License
 
@@ -117,7 +116,7 @@ Work in progress. Current focus is the `EditHelper` inspector component.
 Inside the **Colors** group, the **Bg Image** row now lets you set a background image two ways:
 
 - **Paste a URL** into the text field and press Enter or click away
-- **Click 📁** to pick a local file — it gets converted to a data URL automatically
+- **Click 📁** to pick a local file, it gets converted to a data URL automatically
 
 A thumbnail preview appears once an image is set. Hit **✕** to clear it.
 
