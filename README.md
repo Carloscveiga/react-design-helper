@@ -1,6 +1,6 @@
 # React-Design-Helper
 
-> A work-in-progress React dev helper, inspect and live-tweak your UI without leaving the browser.
+> Live UI inspector and style editor for React. Select any element, tweak its styles in real time, and copy the values into your code — no Figma, no DevTools tab required.
 
 ## Installation
 
@@ -27,9 +27,11 @@ Works with TypeScript and plain JavaScript. No Tailwind required.
 
 ## What is this?
 
-Working with Three.js, you get helpers that output live camera positions so you can tweak values in real time and bake them into your code. This project brings that same idea to React.
+**react-design-helper** is a lightweight React component that gives you a live UI inspector and editor directly inside your browser, without leaving your app.
 
-Instead of jumping to Figma, opening DevTools, or digging through computed styles, you drop an `<EditHelper />` component into any section and get an inline inspector panel that lets you select elements, read their styles, and edit them live.
+Drop `<EditHelper />` into any section of your React project. Click **⚙ inspect** and a panel slides in showing every element in that section as a tree. Select any element, a `div`, `h1`, `button`, whatever, and instantly edit its styles: font size, colors, spacing, layout, borders, background images, and more. Every change reflects on screen in real time.
+
+No Figma. No DevTools. No back-and-forth between tools. Just click, tweak, and copy the values you want into your code.
 
 ## How it works
 
