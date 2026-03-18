@@ -82,6 +82,10 @@ const PROPS: Prop[] = [
     get: s => String(px(s.marginTop)), set: (el, v) => { el.style.marginTop = `${v}px` } },
   { key: 'marginBottom', label: 'Bottom', group: 'Margin', type: 'range', min: -64, max: 120, unit: 'px',
     get: s => String(px(s.marginBottom)), set: (el, v) => { el.style.marginBottom = `${v}px` } },
+  { key: 'marginLeft', label: 'Left', group: 'Margin', type: 'range', min: -64, max: 120, unit: 'px',
+    get: s => String(px(s.marginLeft)), set: (el, v) => { el.style.marginLeft = `${v}px` } },
+  { key: 'marginRight', label: 'Right', group: 'Margin', type: 'range', min: -64, max: 120, unit: 'px',
+    get: s => String(px(s.marginRight)), set: (el, v) => { el.style.marginRight = `${v}px` } },
   // Typography
   { key: 'fontSize', label: 'Size', group: 'Typography', type: 'range', min: 8, max: 96, unit: 'px',
     get: s => String(px(s.fontSize)), set: (el, v) => { el.style.fontSize = `${v}px` } },
