@@ -163,7 +163,12 @@ The **Sizing** group (Width, Height, Max Width, Min Height) now has a dedicated 
 - **px input**  type an exact pixel value
 - **rem input**  type in rem units, automatically converts to px and stays in sync
 
-All three controls are linked, changing any one updates the others. The Height value also auto-updates when Width changes cause the element to reflow.
+All four controls are linked, changing any one updates the others. The Height value also auto-updates when Width changes cause the element to reflow.
+
+- **Slider** — drag to scrub visually
+- **px** — exact pixel value
+- **rem** — rem units, synced with px
+- **tw** — Tailwind spacing unit (`px ÷ 4`). Type `4` to get `16px`. Shown in purple so it's easy to spot.
 
 ---
 

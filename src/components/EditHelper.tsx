@@ -157,6 +157,7 @@ const inputStyle: React.CSSProperties = {
 function SizeInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const numPx = Math.round(parseFloat(value)) || 0
   const numRem = parseFloat((numPx / 16).toFixed(2))
+  const numTw = parseFloat((numPx / 4).toFixed(2))
   const sliderVal = Math.min(Math.max(numPx, 0), 2000)
 
   return (
@@ -178,6 +179,12 @@ function SizeInput({ value, onChange }: { value: string; onChange: (v: string) =
             onChange={e => onChange(`${Math.round(parseFloat(e.target.value) * 16)}px`)}
             style={inputStyle} />
           <span style={{ color: '#52525b', fontSize: 9, flexShrink: 0 }}>rem</span>
+        </div>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 3 }}>
+          <input type="number" value={numTw} step={0.5} min={0}
+            onChange={e => onChange(`${parseFloat(e.target.value) * 4}px`)}
+            style={inputStyle} />
+          <span style={{ color: '#a78bfa', fontSize: 9, flexShrink: 0 }}>tw</span>
         </div>
       </div>
     </div>
