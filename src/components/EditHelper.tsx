@@ -29,7 +29,7 @@ interface Prop {
   key: string
   label: string
   group: string
-  type: 'color' | 'range' | 'select' | 'text' | 'image' | 'size'
+  type: 'color' | 'range' | 'select' | 'text' | 'image' | 'size' | 'tracking' | 'font'
   options?: string[]
   min?: number; max?: number; step?: number; unit?: string
   cond?: (s: CSSStyleDeclaration) => boolean
@@ -56,9 +56,9 @@ const PROPS: Prop[] = [
     options: ['flex-start', 'flex-end', 'center', 'stretch', 'baseline'],
     cond: s => s.display.includes('flex'),
     get: s => s.alignItems, set: (el, v) => { el.style.alignItems = v } },
-  { key: 'gap', label: 'Gap', group: 'Layout', type: 'range', min: 0, max: 64, unit: 'px',
+  { key: 'gap', label: 'Gap', group: 'Layout', type: 'size',
     cond: s => s.display.includes('flex') || s.display === 'grid',
-    get: s => String(px(s.gap)), set: (el, v) => { el.style.gap = `${v}px` } },
+    get: s => `${px(s.gap)}px`, set: (el, v) => { el.style.gap = v } },
   // Sizing
   { key: 'width', label: 'Width', group: 'Sizing', type: 'size',
     get: s => s.width, set: (el, v) => { el.style.width = v } },
@@ -69,35 +69,37 @@ const PROPS: Prop[] = [
   { key: 'minHeight', label: 'Min Height', group: 'Sizing', type: 'size',
     get: s => s.minHeight, set: (el, v) => { el.style.minHeight = v } },
   // Padding
-  { key: 'paddingTop', label: 'Top', group: 'Padding', type: 'range', min: 0, max: 120, unit: 'px',
-    get: s => String(px(s.paddingTop)), set: (el, v) => { el.style.paddingTop = `${v}px` } },
-  { key: 'paddingRight', label: 'Right', group: 'Padding', type: 'range', min: 0, max: 120, unit: 'px',
-    get: s => String(px(s.paddingRight)), set: (el, v) => { el.style.paddingRight = `${v}px` } },
-  { key: 'paddingBottom', label: 'Bottom', group: 'Padding', type: 'range', min: 0, max: 120, unit: 'px',
-    get: s => String(px(s.paddingBottom)), set: (el, v) => { el.style.paddingBottom = `${v}px` } },
-  { key: 'paddingLeft', label: 'Left', group: 'Padding', type: 'range', min: 0, max: 120, unit: 'px',
-    get: s => String(px(s.paddingLeft)), set: (el, v) => { el.style.paddingLeft = `${v}px` } },
+  { key: 'paddingTop', label: 'Top', group: 'Padding', type: 'size',
+    get: s => s.paddingTop, set: (el, v) => { el.style.paddingTop = v } },
+  { key: 'paddingRight', label: 'Right', group: 'Padding', type: 'size',
+    get: s => s.paddingRight, set: (el, v) => { el.style.paddingRight = v } },
+  { key: 'paddingBottom', label: 'Bottom', group: 'Padding', type: 'size',
+    get: s => s.paddingBottom, set: (el, v) => { el.style.paddingBottom = v } },
+  { key: 'paddingLeft', label: 'Left', group: 'Padding', type: 'size',
+    get: s => s.paddingLeft, set: (el, v) => { el.style.paddingLeft = v } },
   // Margin
-  { key: 'marginTop', label: 'Top', group: 'Margin', type: 'range', min: -64, max: 120, unit: 'px',
-    get: s => String(px(s.marginTop)), set: (el, v) => { el.style.marginTop = `${v}px` } },
-  { key: 'marginBottom', label: 'Bottom', group: 'Margin', type: 'range', min: -64, max: 120, unit: 'px',
-    get: s => String(px(s.marginBottom)), set: (el, v) => { el.style.marginBottom = `${v}px` } },
-  { key: 'marginLeft', label: 'Left', group: 'Margin', type: 'range', min: -64, max: 120, unit: 'px',
-    get: s => String(px(s.marginLeft)), set: (el, v) => { el.style.marginLeft = `${v}px` } },
-  { key: 'marginRight', label: 'Right', group: 'Margin', type: 'range', min: -64, max: 120, unit: 'px',
-    get: s => String(px(s.marginRight)), set: (el, v) => { el.style.marginRight = `${v}px` } },
+  { key: 'marginTop', label: 'Top', group: 'Margin', type: 'size',
+    get: s => s.marginTop, set: (el, v) => { el.style.marginTop = v } },
+  { key: 'marginBottom', label: 'Bottom', group: 'Margin', type: 'size',
+    get: s => s.marginBottom, set: (el, v) => { el.style.marginBottom = v } },
+  { key: 'marginLeft', label: 'Left', group: 'Margin', type: 'size',
+    get: s => s.marginLeft, set: (el, v) => { el.style.marginLeft = v } },
+  { key: 'marginRight', label: 'Right', group: 'Margin', type: 'size',
+    get: s => s.marginRight, set: (el, v) => { el.style.marginRight = v } },
   // Typography
-  { key: 'fontSize', label: 'Size', group: 'Typography', type: 'range', min: 8, max: 96, unit: 'px',
-    get: s => String(px(s.fontSize)), set: (el, v) => { el.style.fontSize = `${v}px` } },
+  { key: 'fontFamily', label: 'Font', group: 'Typography', type: 'font',
+    get: s => s.fontFamily, set: (el, v) => { el.style.fontFamily = v } },
+  { key: 'fontSize', label: 'Size', group: 'Typography', type: 'size',
+    get: s => s.fontSize, set: (el, v) => { el.style.fontSize = v } },
   { key: 'fontWeight', label: 'Weight', group: 'Typography', type: 'select',
     options: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
     get: s => s.fontWeight, set: (el, v) => { el.style.fontWeight = v } },
-  { key: 'lineHeight', label: 'Line Height', group: 'Typography', type: 'text',
+  { key: 'lineHeight', label: 'Line Height', group: 'Typography', type: 'size',
     get: s => s.lineHeight, set: (el, v) => { el.style.lineHeight = v } },
   { key: 'textAlign', label: 'Align', group: 'Typography', type: 'select',
     options: ['left', 'center', 'right', 'justify'],
     get: s => s.textAlign, set: (el, v) => { el.style.textAlign = v } },
-  { key: 'letterSpacing', label: 'Tracking', group: 'Typography', type: 'text',
+  { key: 'letterSpacing', label: 'Tracking', group: 'Typography', type: 'tracking',
     get: s => s.letterSpacing, set: (el, v) => { el.style.letterSpacing = v } },
   // Colors
   { key: 'backgroundColor', label: 'Background', group: 'Colors', type: 'color',
@@ -191,6 +193,109 @@ function SizeInput({ value, onChange }: { value: string; onChange: (v: string) =
   )
 }
 
+const TW_TRACKING = [
+  { label: 'tighter', value: '-0.05em' },
+  { label: 'tight',   value: '-0.025em' },
+  { label: 'normal',  value: '0em' },
+  { label: 'wide',    value: '0.025em' },
+  { label: 'wider',   value: '0.05em' },
+  { label: 'widest',  value: '0.1em' },
+]
+
+function FontInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [fonts, setFonts] = useState<string[]>([])
+  const folderRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (folderRef.current) folderRef.current.setAttribute('webkitdirectory', '')
+  }, [])
+
+  const currentFont = value.split(',')[0].trim().replace(/['"]/g, '')
+
+  async function handleFolderLoad(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []).filter(f => /\.(ttf|otf|woff|woff2)$/i.test(f.name))
+    const loaded: string[] = []
+    for (const file of files) {
+      const fontName = file.name.replace(/\.[^.]+$/, '')
+      const url = URL.createObjectURL(file)
+      const style = document.createElement('style')
+      style.textContent = `@font-face { font-family: '${fontName}'; src: url('${url}'); }`
+      document.head.appendChild(style)
+      loaded.push(fontName)
+    }
+    setFonts(prev => [...new Set([...prev, ...loaded])])
+  }
+
+  return (
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+        <span style={{ flex: 1, color: '#a1a1aa', fontSize: 10, fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {currentFont}
+        </span>
+        <button onClick={() => folderRef.current?.click()}
+          style={{ background: '#27272a', border: '1px solid #3f3f46', borderRadius: 4, color: '#a1a1aa', cursor: 'pointer', fontSize: 11, padding: '2px 8px', flexShrink: 0 }}
+          title="Load fonts from folder">📁 load fonts
+        </button>
+        <input ref={folderRef} type="file" onChange={handleFolderLoad} style={{ display: 'none' }} />
+      </div>
+      {fonts.length > 0 && (
+        <select
+          value={currentFont}
+          onChange={e => onChange(e.target.value)}
+          style={{ background: '#27272a', color: '#e4e4e7', border: '1px solid #3f3f46', borderRadius: 4, fontSize: 10, fontFamily: 'monospace', padding: '3px 4px' }}
+        >
+          {fonts.map(f => (
+            <option key={f} value={f} style={{ fontFamily: f }}>{f}</option>
+          ))}
+        </select>
+      )}
+    </div>
+  )
+}
+
+function TrackingInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const numPx = parseFloat(value) || 0
+  const numRem = parseFloat((numPx / 16).toFixed(4))
+  const numTw = parseFloat((numPx / 4).toFixed(4))
+  return (
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <input type="range" min={-10} max={40} step={0.5} value={numPx}
+        onChange={e => onChange(`${e.target.value}px`)}
+        style={{ width: '100%', accentColor: '#6366f1', height: 4, marginTop: 4 }} />
+      <div style={{ display: 'flex', gap: 4 }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 3 }}>
+          <input type="number" value={numPx} step={0.5}
+            onChange={e => onChange(`${e.target.value}px`)}
+            style={inputStyle} />
+          <span style={{ color: '#52525b', fontSize: 9, flexShrink: 0 }}>px</span>
+        </div>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 3 }}>
+          <input type="number" value={numRem} step={0.0625}
+            onChange={e => onChange(`${parseFloat(e.target.value) * 16}px`)}
+            style={inputStyle} />
+          <span style={{ color: '#52525b', fontSize: 9, flexShrink: 0 }}>rem</span>
+        </div>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 3 }}>
+          <input type="number" value={numTw} step={0.25}
+            onChange={e => onChange(`${parseFloat(e.target.value) * 4}px`)}
+            style={inputStyle} />
+          <span style={{ color: '#a78bfa', fontSize: 9, flexShrink: 0 }}>tw</span>
+        </div>
+      </div>
+      <select
+        defaultValue=""
+        onChange={e => { if (e.target.value) onChange(e.target.value) }}
+        style={{ background: '#27272a', color: '#e4e4e7', border: '1px solid #3f3f46', borderRadius: 4, fontSize: 10, fontFamily: 'monospace', padding: '2px 4px' }}
+      >
+        <option value="" disabled>tw preset...</option>
+        {TW_TRACKING.map(t => (
+          <option key={t.label} value={t.value}>tracking-{t.label} ({t.value})</option>
+        ))}
+      </select>
+    </div>
+  )
+}
+
 function BgImageInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const fileRef = useRef<HTMLInputElement>(null)
   // Extract raw URL from url("...") for the text input
@@ -269,7 +374,7 @@ function ResizeHandle({ pos, onMouseDown }: { pos: string; onMouseDown: (e: Reac
 }
 
 function PropRow({ prop, value, onChange }: { prop: Prop; value: string; onChange: (v: string) => void }) {
-  const isSize = prop.type === 'size'
+  const isSize = prop.type === 'size' || prop.type === 'tracking' || prop.type === 'font'
   return (
     <div style={{ display: 'flex', alignItems: isSize ? 'flex-start' : 'center', gap: 6, padding: isSize ? '8px 0' : '3px 0', minHeight: 26 }}>
       <span style={{ width: 74, fontSize: 10, color: '#71717a', fontFamily: 'monospace', flexShrink: 0, paddingTop: isSize ? 5 : 0 }}>
@@ -316,6 +421,14 @@ function PropRow({ prop, value, onChange }: { prop: Prop; value: string; onChang
       {prop.type === 'size' && (
         <SizeInput value={value} onChange={onChange} />
       )}
+
+      {prop.type === 'tracking' && (
+        <TrackingInput value={value} onChange={onChange} />
+      )}
+
+      {prop.type === 'font' && (
+        <FontInput value={value} onChange={onChange} />
+      )}
     </div>
   )
 }
@@ -326,7 +439,7 @@ export function EditHelper() {
   const wrapRef = useRef<HTMLDivElement>(null)
   const [open, setOpen] = useState(false)
 
-  // Auto-set positioning context on parent if missing, so no need for `relative` class
+  // Auto-set positioning context on parent if missing
   useEffect(() => {
     const parent = wrapRef.current?.parentElement
     if (!parent) return
@@ -334,6 +447,7 @@ export function EditHelper() {
       parent.style.position = 'relative'
     }
   }, [])
+
   const [nodes, setNodes] = useState<FlatNode[]>([])
   const [selId, setSelId] = useState<number | null>(null)
   const [vals, setVals] = useState<Record<string, string>>({})

@@ -206,3 +206,41 @@ A 5px drag handle sits on the inner edge of the panel. Hover it to see it highli
 ### Full margin controls
 
 The **Margin** group now includes all four sides: Top, Bottom, Left, Right.
+
+---
+
+## v0.2.2 Changes
+
+### Tailwind units across all size controls
+
+Every size input (Sizing, Padding, Margin, Font Size, Line Height) now shows a **tw** field alongside px and rem:
+
+- **tw** — Tailwind spacing unit (`px ÷ 4`). Type `4` to get `16px`. Shown in purple so it's easy to spot.
+
+All four fields (slider, px, rem, tw) stay in sync as you edit any one of them.
+
+### Letter spacing (Tracking)
+
+The **Typography** group now has a dedicated **Tracking** control instead of a plain text input:
+
+- **Slider** — drag to scrub from −0.1em to 0.2em
+- **px input** — type an exact pixel value
+- **Preset buttons** — quick-set Tailwind tracking values:
+
+| Button | Value |
+|---|---|
+| tighter | −0.05em |
+| tight | −0.025em |
+| normal | 0em |
+| wide | 0.025em |
+| wider | 0.05em |
+| widest | 0.1em |
+
+### Font family picker
+
+The **Typography** group now has a **Font** row:
+
+- Shows the element's current computed font
+- **📁 load fonts** button opens a folder picker — select any folder containing `.ttf`, `.otf`, `.woff`, or `.woff2` files
+- All fonts in the folder are loaded via `@font-face` and listed in a dropdown
+- Select any font from the dropdown to apply it instantly
