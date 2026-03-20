@@ -163,4 +163,41 @@ The **Sizing** group (Width, Height, Max Width, Min Height) now has a dedicated 
 - **px input**  type an exact pixel value
 - **rem input**  type in rem units, automatically converts to px and stays in sync
 
-All three controls are linked, changing any one updates the others.
+All three controls are linked, changing any one updates the others. The Height value also auto-updates when Width changes cause the element to reflow.
+
+---
+
+## v0.2.0 Changes
+
+### Collapsible element tree
+
+Nodes with children now show a ▶/▼ arrow. Click the arrow to collapse or expand that branch. Click the label to select the element as before.
+
+### Class and content editing
+
+At the top of the properties panel, two new fields appear for the selected element:
+
+- **CLASSES** — shows the full class string (e.g. `max-w-7xl mx-auto flex`). Edit it and press `Enter` or click away to apply instantly. Change `max-w-7xl` to `max-w-2xl` and the element updates live.
+- **CONTENT** — appears only on leaf elements with text (e.g. `h1`, `p`, `button`). Edit the text and blur to apply.
+
+### Panel positioning
+
+Click **⚙** in the panel header to open a position menu:
+
+| Option | Layout |
+|---|---|
+| Right | Vertical sidebar anchored to the right edge (default) |
+| Left | Vertical sidebar anchored to the left edge |
+| Top | Horizontal bar across the top (tree left, properties right) |
+| Bottom | Horizontal bar across the bottom |
+| Float | Free-floating draggable window |
+
+In **Float** mode the header becomes a drag handle — mouse and touch both work.
+
+### Resizable panel
+
+A 5px drag handle sits on the inner edge of the panel. Hover it to see it highlight, then drag to resize. Works across all positions. Min 220px, max 800px.
+
+### Full margin controls
+
+The **Margin** group now includes all four sides: Top, Bottom, Left, Right.

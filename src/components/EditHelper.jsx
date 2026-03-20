@@ -225,6 +225,23 @@ function BgImageInput({ value, onChange }) {
   )
 }
 
+function ResizeHandle({ pos, onMouseDown }) {
+  const [hovered, setHovered] = useState(false)
+  const edgeStyle =
+    pos === 'right'  ? { left: 0,   top: 0, bottom: 0, width: 5,  cursor: 'col-resize' } :
+    pos === 'left'   ? { right: 0,  top: 0, bottom: 0, width: 5,  cursor: 'col-resize' } :
+    pos === 'top'    ? { bottom: 0, left: 0, right: 0, height: 5, cursor: 'row-resize' } :
+                       { top: 0,    left: 0, right: 0, height: 5, cursor: 'row-resize' }
+  return (
+    <div
+      onMouseDown={onMouseDown}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{ position: 'absolute', ...edgeStyle, background: hovered ? 'rgba(99,102,241,0.5)' : 'transparent', transition: 'background 0.15s', zIndex: 1 }}
+    />
+  )
+}
+
 function PropRow({ prop, value, onChange }) {
   const isSize = prop.type === 'size'
   return (
@@ -296,6 +313,7 @@ export function EditHelper() {
   const [selId, setSelId] = useState(null)
   const [vals, setVals] = useState({})
   const [collapsed, setCollapsed] = useState(new Set())
+  const [collapsedTree, setCollapsedTree] = useState(new Set())
   const prevHighlight = useRef(null)
 
   // Build tree when panel opens
@@ -308,6 +326,7 @@ export function EditHelper() {
     walk(parent, wrapRef.current, 1, children, { n: 1 })
 
     const all = [{ id: 0, el: parent, depth: 0 }, ...children]
+    all.forEach((n, i) => { n.hasChildren = i < all.length - 1 && all[i + 1].depth > n.depth })
     setNodes(all)
     selectNode(all[0], all)
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -362,6 +381,29 @@ export function EditHelper() {
     setVals(prev => ({ ...prev, [prop.key]: value }))
   }
 
+  function toggleTreeNode(id, e) {
+    e.stopPropagation()
+    setCollapsedTree(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id); else next.add(id)
+      return next
+    })
+  }
+
+  function getVisibleNodes() {
+    const visible = []
+    let hiddenDepth = null
+    for (const node of nodes) {
+      if (hiddenDepth !== null) {
+        if (node.depth > hiddenDepth) continue
+        else hiddenDepth = null
+      }
+      visible.push(node)
+      if (collapsedTree.has(node.id)) hiddenDepth = node.depth
+    }
+    return visible
+  }
+
   function toggleGroup(g) {
     setCollapsed(prev => {
       const next = new Set(prev)
@@ -370,8 +412,174 @@ export function EditHelper() {
     })
   }
 
+  const [panelPos, setPanelPos] = useState('right')
+  const [showSettings, setShowSettings] = useState(false)
+  const [panelSize, setPanelSize] = useState(320)
+  const [floatPos, setFloatPos] = useState({ x: 80, y: 80 })
+
+  const isHorizontal = panelPos === 'top' || panelPos === 'bottom'
+
+  function getPanelStyle() {
+    const base = {
+      position: 'fixed', background: '#18181b',
+      display: 'flex', flexDirection: 'column',
+      fontFamily: 'monospace', fontSize: 11, zIndex: 9999,
+    }
+    switch (panelPos) {
+      case 'left':   return { ...base, top: 0, left: 0, bottom: 0, width: panelSize, borderRight: '1px solid #3f3f46', boxShadow: '8px 0 32px rgba(0,0,0,0.5)' }
+      case 'top':    return { ...base, top: 0, left: 0, right: 0, height: panelSize, borderBottom: '1px solid #3f3f46', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }
+      case 'bottom': return { ...base, bottom: 0, left: 0, right: 0, height: panelSize, borderTop: '1px solid #3f3f46', boxShadow: '0 -8px 32px rgba(0,0,0,0.5)' }
+      case 'float':  return { ...base, left: floatPos.x, top: floatPos.y, width: panelSize, maxHeight: '80vh', border: '1px solid #3f3f46', borderRadius: 8, boxShadow: '0 16px 48px rgba(0,0,0,0.6)' }
+      default:       return { ...base, top: 0, right: 0, bottom: 0, width: panelSize, borderLeft: '1px solid #3f3f46', boxShadow: '-8px 0 32px rgba(0,0,0,0.5)' }
+    }
+  }
+
+  function startDragPanel(e) {
+    if (panelPos !== 'float') return
+    const startX = e.clientX - floatPos.x
+    const startY = e.clientY - floatPos.y
+    function onMove(e) { setFloatPos({ x: e.clientX - startX, y: e.clientY - startY }) }
+    function onUp() { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp) }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+  }
+
+  function startDragPanelTouch(e) {
+    if (panelPos !== 'float') return
+    const t = e.touches[0]
+    const startX = t.clientX - floatPos.x
+    const startY = t.clientY - floatPos.y
+    function onMove(e) { const t = e.touches[0]; setFloatPos({ x: t.clientX - startX, y: t.clientY - startY }) }
+    function onEnd() { window.removeEventListener('touchmove', onMove); window.removeEventListener('touchend', onEnd) }
+    window.addEventListener('touchmove', onMove, { passive: false })
+    window.addEventListener('touchend', onEnd)
+  }
+
+  function startResize(e) {
+    e.preventDefault()
+    const startPos = isHorizontal ? e.clientY : e.clientX
+    const startSize = panelSize
+    function onMove(e) {
+      const delta = isHorizontal ? e.clientY - startPos : e.clientX - startPos
+      const newSize =
+        panelPos === 'right'  ? startSize - delta :
+        panelPos === 'left'   ? startSize + delta :
+        panelPos === 'bottom' ? startSize - delta :
+                                startSize + delta
+      setPanelSize(Math.max(220, Math.min(800, newSize)))
+    }
+    function onUp() {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+  }
+
+  const POSITIONS = [
+    { key: 'right',  label: 'Right',  icon: '▶' },
+    { key: 'left',   label: 'Left',   icon: '◀' },
+    { key: 'top',    label: 'Top',    icon: '▲' },
+    { key: 'bottom', label: 'Bottom', icon: '▼' },
+    { key: 'float',  label: 'Float',  icon: '⊞' },
+  ]
+
   const selectedNode = nodes.find(n => n.id === selId)
   const computedStyles = selectedNode ? getComputedStyle(selectedNode.el) : null
+
+  const treeContent = (
+    <div style={isHorizontal
+      ? { width: 220, borderRight: '1px solid #3f3f46', overflowY: 'auto', padding: '8px 10px', flexShrink: 0 }
+      : { padding: '8px 14px 4px' }
+    }>
+      <div style={{ color: '#52525b', letterSpacing: '0.1em', fontSize: 9, marginBottom: 6 }}>TREE</div>
+      <div style={{ overflowY: 'auto', maxHeight: isHorizontal ? 'none' : 200 }}>
+        {getVisibleNodes().map(node => (
+          <div
+            key={node.id}
+            onClick={() => selectNode(node)}
+            style={{
+              paddingLeft: 4 + node.depth * 10,
+              paddingTop: 3, paddingBottom: 3, paddingRight: 4,
+              color: node.id === selId ? '#a5b4fc' : '#71717a',
+              background: node.id === selId ? 'rgba(99,102,241,0.12)' : 'transparent',
+              cursor: 'pointer', borderRadius: 4,
+              display: 'flex', alignItems: 'center', gap: 4, fontSize: 11,
+            }}
+          >
+            {node.hasChildren
+              ? <span onClick={e => toggleTreeNode(node.id, e)}
+                  style={{ fontSize: 8, color: '#52525b', flexShrink: 0, userSelect: 'none', padding: '0 2px' }}>
+                  {collapsedTree.has(node.id) ? '▶' : '▼'}
+                </span>
+              : <span style={{ width: 12, flexShrink: 0 }} />
+            }
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {nodeLabel(node.el)}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+
+  const propertiesContent = selectedNode && computedStyles && (
+    <div style={{ flex: 1, overflowY: 'auto', padding: '6px 14px 16px' }}>
+      <div style={{ color: '#a5b4fc', fontSize: 11, marginBottom: 10, letterSpacing: '0.05em' }}>
+        &lt;{selectedNode.el.tagName.toLowerCase()}&gt;
+      </div>
+
+      {/* Classes */}
+      <div style={{ marginBottom: 10 }}>
+        <div style={{ color: '#52525b', fontSize: 9, letterSpacing: '0.1em', marginBottom: 4 }}>CLASSES</div>
+        <input
+          type="text"
+          defaultValue={selectedNode.el.className}
+          key={selectedNode.id + '-class'}
+          onBlur={e => { selectedNode.el.className = e.target.value }}
+          onKeyDown={e => { if (e.key === 'Enter') { selectedNode.el.className = e.currentTarget.value; e.currentTarget.blur() } }}
+          style={{ width: '100%', background: '#27272a', color: '#e4e4e7', border: '1px solid #3f3f46', borderRadius: 4, fontSize: 10, fontFamily: 'monospace', padding: '4px 6px', boxSizing: 'border-box' }}
+        />
+      </div>
+
+      {/* Text content */}
+      {selectedNode.el.childElementCount === 0 && selectedNode.el.textContent?.trim() !== '' && (
+        <div style={{ marginBottom: 10 }}>
+          <div style={{ color: '#52525b', fontSize: 9, letterSpacing: '0.1em', marginBottom: 4 }}>CONTENT</div>
+          <textarea
+            defaultValue={selectedNode.el.textContent ?? ''}
+            key={selectedNode.id + '-content'}
+            onBlur={e => { selectedNode.el.textContent = e.target.value }}
+            rows={2}
+            style={{ width: '100%', background: '#27272a', color: '#e4e4e7', border: '1px solid #3f3f46', borderRadius: 4, fontSize: 10, fontFamily: 'monospace', padding: '4px 6px', boxSizing: 'border-box', resize: 'vertical' }}
+          />
+        </div>
+      )}
+
+      <div style={{ height: 1, background: '#3f3f46', marginBottom: 10 }} />
+
+      {GROUPS.map(group => {
+        const groupProps = PROPS.filter(p => p.group === group && (!p.cond || p.cond(computedStyles)))
+        if (!groupProps.length) return null
+        const isCollapsed = collapsed.has(group)
+        return (
+          <div key={group} style={{ marginBottom: 6 }}>
+            <div onClick={() => toggleGroup(group)} style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#52525b', fontSize: 9, letterSpacing: '0.1em', cursor: 'pointer', padding: '4px 0', userSelect: 'none' }}>
+              <span style={{ fontSize: 8 }}>{isCollapsed ? '▶' : '▼'}</span>
+              {group.toUpperCase()}
+            </div>
+            {!isCollapsed && (
+              <div style={{ paddingLeft: 2 }}>
+                {groupProps.map(prop => (
+                  <PropRow key={prop.key} prop={prop} value={vals[prop.key] ?? ''} onChange={v => applyProp(prop, v)} />
+                ))}
+              </div>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
 
   return (
     <div ref={wrapRef} style={{ position: 'absolute', top: 10, right: 10, zIndex: 9999 }}>
@@ -391,94 +599,47 @@ export function EditHelper() {
 
       {/* Fixed panel */}
       {open && (
-        <div style={{
-          position: 'fixed', top: 0, right: 0, bottom: 0,
-          width: 320, background: '#18181b',
-          borderLeft: '1px solid #3f3f46',
-          display: 'flex', flexDirection: 'column',
-          fontFamily: 'monospace', fontSize: 11,
-          boxShadow: '-8px 0 32px rgba(0,0,0,0.5)',
-          zIndex: 9999,
-        }}>
+        <div style={getPanelStyle()}>
+          <ResizeHandle pos={panelPos} onMouseDown={startResize} />
 
           {/* Header */}
-          <div style={{
-            padding: '12px 14px 10px', borderBottom: '1px solid #3f3f46',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          }}>
+          <div
+            onMouseDown={startDragPanel}
+            onTouchStart={startDragPanelTouch}
+            style={{ padding: '10px 14px', borderBottom: '1px solid #3f3f46', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, cursor: panelPos === 'float' ? 'grab' : 'default', userSelect: 'none' }}
+          >
             <span style={{ color: '#e4e4e7', letterSpacing: '0.1em', fontSize: 11 }}>◈ INSPECTOR</span>
-            <button onClick={handleClose} style={{ background: 'none', border: 'none', color: '#71717a', cursor: 'pointer', fontSize: 14, lineHeight: 1 }}>✕</button>
-          </div>
-
-          {/* Tree */}
-          <div style={{ padding: '8px 14px 4px' }}>
-            <div style={{ color: '#52525b', letterSpacing: '0.1em', fontSize: 9, marginBottom: 6 }}>TREE</div>
-            <div style={{ overflowY: 'auto', maxHeight: 200 }}>
-              {nodes.map(node => (
-                <div
-                  key={node.id}
-                  onClick={() => selectNode(node)}
-                  style={{
-                    paddingLeft: 4 + node.depth * 10,
-                    paddingTop: 3, paddingBottom: 3, paddingRight: 4,
-                    color: node.id === selId ? '#a5b4fc' : '#71717a',
-                    background: node.id === selId ? 'rgba(99,102,241,0.12)' : 'transparent',
-                    cursor: 'pointer', borderRadius: 4,
-                    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                    fontSize: 11,
-                  }}
-                >
-                  {node.depth > 0 ? '└ ' : ''}{nodeLabel(node.el)}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div style={{ height: 1, background: '#3f3f46', margin: '4px 0' }} />
-
-          {/* Properties */}
-          {selectedNode && computedStyles && (
-            <div style={{ flex: 1, overflowY: 'auto', padding: '6px 14px 16px' }}>
-              <div style={{ color: '#a5b4fc', fontSize: 11, marginBottom: 10, letterSpacing: '0.05em' }}>
-                &lt;{selectedNode.el.tagName.toLowerCase()}&gt;
-              </div>
-
-              {GROUPS.map(group => {
-                const groupProps = PROPS.filter(p =>
-                  p.group === group && (!p.cond || p.cond(computedStyles))
-                )
-                if (!groupProps.length) return null
-                const isCollapsed = collapsed.has(group)
-                return (
-                  <div key={group} style={{ marginBottom: 6 }}>
-                    <div
-                      onClick={() => toggleGroup(group)}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 6,
-                        color: '#52525b', fontSize: 9, letterSpacing: '0.1em',
-                        cursor: 'pointer', padding: '4px 0', userSelect: 'none',
-                      }}
-                    >
-                      <span style={{ fontSize: 8 }}>{isCollapsed ? '▶' : '▼'}</span>
-                      {group.toUpperCase()}
-                    </div>
-                    {!isCollapsed && (
-                      <div style={{ paddingLeft: 2 }}>
-                        {groupProps.map(prop => (
-                          <PropRow
-                            key={prop.key}
-                            prop={prop}
-                            value={vals[prop.key] ?? ''}
-                            onChange={v => applyProp(prop, v)}
-                          />
-                        ))}
-                      </div>
-                    )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              {/* Settings */}
+              <div style={{ position: 'relative' }}>
+                <button
+                  onClick={() => setShowSettings(p => !p)}
+                  title="Panel position"
+                  style={{ background: 'none', border: 'none', color: showSettings ? '#a5b4fc' : '#71717a', cursor: 'pointer', fontSize: 13, lineHeight: 1, padding: '2px 4px' }}
+                >⚙</button>
+                {showSettings && (
+                  <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 4, background: '#27272a', border: '1px solid #3f3f46', borderRadius: 6, padding: 4, zIndex: 10001, minWidth: 110 }}>
+                    <div style={{ color: '#52525b', fontSize: 9, letterSpacing: '0.1em', padding: '4px 8px 6px' }}>POSITION</div>
+                    {POSITIONS.map(p => (
+                      <button key={p.key} onClick={() => { setPanelPos(p.key); setShowSettings(false) }}
+                        style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', background: panelPos === p.key ? 'rgba(99,102,241,0.15)' : 'none', border: 'none', color: panelPos === p.key ? '#a5b4fc' : '#a1a1aa', padding: '5px 10px', cursor: 'pointer', fontSize: 10, fontFamily: 'monospace', borderRadius: 4 }}>
+                        <span style={{ fontSize: 8 }}>{p.icon}</span> {p.label}
+                      </button>
+                    ))}
                   </div>
-                )
-              })}
+                )}
+              </div>
+              <button onClick={handleClose} style={{ background: 'none', border: 'none', color: '#71717a', cursor: 'pointer', fontSize: 14, lineHeight: 1 }}>✕</button>
             </div>
-          )}
+          </div>
+
+          {/* Body — row for top/bottom, column for left/right */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: isHorizontal ? 'row' : 'column', overflow: 'hidden' }}>
+            {treeContent}
+            {!isHorizontal && <div style={{ height: 1, background: '#3f3f46', margin: '4px 0', flexShrink: 0 }} />}
+            {propertiesContent}
+          </div>
+
         </div>
       )}
     </div>
