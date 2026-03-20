@@ -2,12 +2,20 @@ import { useEffect, useRef, useState } from 'react'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function rgbToHex(rgb) {
-  if (!rgb || rgb === 'transparent') return '#ffffff'
-  if (/rgba\(\d+,\s*\d+,\s*\d+,\s*0\b/.test(rgb)) return '#ffffff'
-  const m = rgb.match(/(\d+),\s*(\d+),\s*(\d+)/)
-  if (!m) return '#000000'
-  return '#' + [m[1], m[2], m[3]].map(n => parseInt(n).toString(16).padStart(2, '0')).join('')
+function rgbToHex(color) {
+  if (!color || color === 'transparent') return '#ffffff'
+  try {
+    const canvas = document.createElement('canvas')
+    canvas.width = canvas.height = 1
+    const ctx = canvas.getContext('2d')
+    ctx.fillStyle = color
+    ctx.fillRect(0, 0, 1, 1)
+    const [r, g, b, a] = ctx.getImageData(0, 0, 1, 1).data
+    if (a === 0) return '#ffffff'
+    return '#' + [r, g, b].map(n => n.toString(16).padStart(2, '0')).join('')
+  } catch {
+    return '#000000'
+  }
 }
 
 function px(val) { return Math.round(parseFloat(val)) || 0 }
@@ -85,22 +93,22 @@ const PROPS = [
     get: s => s.textAlign, set: (el, v) => { el.style.textAlign = v } },
   { key: 'letterSpacing', label: 'Tracking', group: 'Typography', type: 'tracking',
     get: s => s.letterSpacing, set: (el, v) => { el.style.letterSpacing = v } },
-  // Colors
-  { key: 'backgroundColor', label: 'Background', group: 'Colors', type: 'color',
-    get: s => rgbToHex(s.backgroundColor), set: (el, v) => { el.style.backgroundColor = v } },
-  { key: 'color', label: 'Text', group: 'Colors', type: 'color',
+  { key: 'color', label: 'Text Color', group: 'Typography', type: 'color',
     get: s => rgbToHex(s.color), set: (el, v) => { el.style.color = v } },
-  { key: 'backgroundImage', label: 'Bg Image', group: 'Colors', type: 'image',
+  // Colors
+  { key: 'backgroundColor', label: 'Background Color', group: 'Background', type: 'color-alpha',
+    get: s => s.backgroundColor, set: (el, v) => { el.style.backgroundColor = v } },
+  { key: 'backgroundImage', label: 'Bg Image', group: 'Background', type: 'image',
     get: s => s.backgroundImage, set: (el, v) => { el.style.backgroundImage = v } },
-  { key: 'backgroundSize', label: 'Bg Size', group: 'Colors', type: 'select',
+  { key: 'backgroundSize', label: 'Bg Size', group: 'Background', type: 'select',
     options: ['cover', 'contain', 'auto', '100% 100%', '50%', '100%'],
     cond: s => s.backgroundImage !== 'none',
     get: s => s.backgroundSize, set: (el, v) => { el.style.backgroundSize = v } },
-  { key: 'backgroundPosition', label: 'Bg Pos', group: 'Colors', type: 'select',
+  { key: 'backgroundPosition', label: 'Bg Pos', group: 'Background', type: 'select',
     options: ['center', 'top', 'bottom', 'left', 'right', 'top center', 'bottom center'],
     cond: s => s.backgroundImage !== 'none',
     get: s => s.backgroundPosition, set: (el, v) => { el.style.backgroundPosition = v } },
-  { key: 'backgroundRepeat', label: 'Bg Repeat', group: 'Colors', type: 'select',
+  { key: 'backgroundRepeat', label: 'Bg Repeat', group: 'Background', type: 'select',
     options: ['no-repeat', 'repeat', 'repeat-x', 'repeat-y'],
     cond: s => s.backgroundImage !== 'none',
     get: s => s.backgroundRepeat, set: (el, v) => { el.style.backgroundRepeat = v } },
@@ -121,7 +129,7 @@ const PROPS = [
     get: s => s.boxShadow, set: (el, v) => { el.style.boxShadow = v } },
 ]
 
-const GROUPS = ['Layout', 'Sizing', 'Padding', 'Margin', 'Typography', 'Colors', 'Border', 'Effects']
+const GROUPS = ['Layout', 'Sizing', 'Padding', 'Margin', 'Typography', 'Background', 'Border', 'Effects']
 
 // ─── DOM walker ───────────────────────────────────────────────────────────────
 
@@ -354,13 +362,62 @@ function ResizeHandle({ pos, onMouseDown }) {
   )
 }
 
+function ColorAlphaInput({ value, onChange }) {
+  const getRgba = (color) => {
+    try {
+      const canvas = document.createElement('canvas')
+      canvas.width = canvas.height = 1
+      const ctx = canvas.getContext('2d')
+      ctx.clearRect(0, 0, 1, 1)
+      ctx.fillStyle = color
+      ctx.fillRect(0, 0, 1, 1)
+      const [r, g, b, a] = ctx.getImageData(0, 0, 1, 1).data
+      return { r, g, b, a }
+    } catch {
+      return { r: 0, g: 0, b: 0, a: 255 }
+    }
+  }
+  const { r, g, b, a } = getRgba(value)
+  const hex = '#' + [r, g, b].map(n => n.toString(16).padStart(2, '0')).join('')
+  const alpha = Math.round((a / 255) * 100)
+
+  const emit = (newHex, newAlpha) => {
+    const r = parseInt(newHex.slice(1, 3), 16)
+    const g = parseInt(newHex.slice(3, 5), 16)
+    const b = parseInt(newHex.slice(5, 7), 16)
+    const a = +(newAlpha / 100).toFixed(2)
+    onChange(a >= 1 ? `rgb(${r}, ${g}, ${b})` : `rgba(${r}, ${g}, ${b}, ${a})`)
+  }
+
+  return (
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <input type="color" value={hex} onChange={e => emit(e.target.value, alpha)}
+          style={{ width: 24, height: 20, border: 'none', background: 'none', cursor: 'pointer', padding: 0, flexShrink: 0 }} />
+        <span style={{ color: '#a1a1aa', fontFamily: 'monospace', fontSize: 10, flex: 1 }}>{hex}</span>
+        <span style={{ color: '#a1a1aa', fontFamily: 'monospace', fontSize: 10, minWidth: 30, textAlign: 'right' }}>{alpha}%</span>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span style={{ color: '#71717a', fontSize: 9, fontFamily: 'monospace', flexShrink: 0 }}>Transparency</span>
+        <input type="range" min={1} max={100} value={alpha}
+          onChange={e => emit(hex, +e.target.value)}
+          style={{ flex: 1, accentColor: '#6366f1', height: 4 }} />
+      </div>
+    </div>
+  )
+}
+
 function PropRow({ prop, value, onChange }) {
-  const isSize = prop.type === 'size' || prop.type === 'tracking' || prop.type === 'font'
+  const isSize = prop.type === 'size' || prop.type === 'tracking' || prop.type === 'font' || prop.type === 'color-alpha'
   return (
     <div style={{ display: 'flex', alignItems: isSize ? 'flex-start' : 'center', gap: 6, padding: isSize ? '8px 0' : '3px 0', minHeight: 26 }}>
       <span style={{ width: 74, fontSize: 10, color: '#71717a', fontFamily: 'monospace', flexShrink: 0, paddingTop: isSize ? 5 : 0 }}>
         {prop.label}
       </span>
+
+      {prop.type === 'color-alpha' && (
+        <ColorAlphaInput value={value} onChange={onChange} />
+      )}
 
       {prop.type === 'color' && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}>

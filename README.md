@@ -236,6 +236,30 @@ The **Typography** group now has a dedicated **Tracking** control instead of a p
 | wider | 0.05em |
 | widest | 0.1em |
 
+---
+
+## v0.2.3 Changes
+
+### Reorganised property groups
+
+- **Typography** group now includes **Text Color** — font and color in one place
+- **Colors** group renamed to **Background** — contains only background-related properties
+- **Gap** (Layout) upgraded to full size control with slider, px, rem, and tw fields
+
+### Background color transparency
+
+The **Background Color** control now includes a **Transparency** slider (1–100%) alongside the color picker. Drag it to apply a semi-transparent background as `rgba()`. The slider is capped at 1% minimum to prevent losing the selected color.
+
+### Background color reads Tailwind v4 colors correctly
+
+Color pickers now use a canvas-based conversion instead of regex parsing, so they correctly read colors in any format — including `oklch()` used by Tailwind v4.
+
+### Tracking now has px, rem, and tw inputs
+
+The **Tracking** (letter-spacing) control now matches the layout of all other size controls: slider on top, then px / rem / tw inputs, then the Tailwind preset dropdown.
+
+---
+
 ### Font family picker
 
 The **Typography** group now has a **Font** row:

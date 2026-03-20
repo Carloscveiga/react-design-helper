@@ -28,7 +28,7 @@ function App() {
 
       <section className="relative w-full min-h-screen bg-white flex items-center justify-center border-b border-gray-200">
         <EditHelper />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center bg-blue-700">
           <p className="text-xl md:text-2xl text-gray-500 mb-10 max-w-3xl mx-auto">
             This is a generic hero section. You can easily customize the text, styles, and layout to match your brand and start converting visitors today.
           </p>
