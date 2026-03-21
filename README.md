@@ -258,8 +258,6 @@ Color pickers now use a canvas-based conversion instead of regex parsing, so the
 
 The **Tracking** (letter-spacing) control now matches the layout of all other size controls: slider on top, then px / rem / tw inputs, then the Tailwind preset dropdown.
 
----
-
 ### Font family picker
 
 The **Typography** group now has a **Font** row:
@@ -268,3 +266,44 @@ The **Typography** group now has a **Font** row:
 - **📁 load fonts** button opens a folder picker — select any folder containing `.ttf`, `.otf`, `.woff`, or `.woff2` files
 - All fonts in the folder are loaded via `@font-face` and listed in a dropdown
 - Select any font from the dropdown to apply it instantly
+
+---
+
+## v0.2.4 Changes
+
+### Layout grid overlay
+
+A **⊞** button in the inspector header opens the layout grid panel:
+
+- Toggle the grid on/off — columns highlight pink when active
+- Configurable via sliders:
+
+| Control | Description |
+|---|---|
+| Columns | Number of columns (1–24, default 12) |
+| Gutter px | Space between columns |
+| Margin px | Left/right page margin |
+| Opacity % | Column overlay opacity (1–50%) |
+| Color | Column color via color picker |
+
+The overlay sits above your page with `pointer-events: none` so it never blocks clicks or inspection.
+
+### Reorganised property groups
+
+- **Typography** now includes **Text Color** — font and color in one place
+- **Colors** group renamed to **Background** — background color, image, and related controls only
+- **Gap** (Layout) upgraded to full size control: slider + px + rem + tw
+
+### Background color transparency
+
+**Background Color** now has a **Transparency** slider (1–100%) alongside the color picker. Drag to apply `rgba()` semi-transparent backgrounds. Capped at 1% to prevent losing the selected color.
+
+### Color pickers read Tailwind v4 correctly
+
+All color pickers now use a canvas-based conversion instead of regex, so they correctly display colors in any format including `oklch()` used by Tailwind v4.
+
+### Tracking — px, rem, and tw inputs
+
+Letter-spacing now matches all other size controls: slider on top, then px / rem / tw inputs, then the Tailwind preset dropdown.
+
+---

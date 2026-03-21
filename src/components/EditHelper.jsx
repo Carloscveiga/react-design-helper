@@ -58,8 +58,12 @@ const PROPS = [
     get: s => s.height, set: (el, v) => { el.style.height = v } },
   { key: 'maxWidth', label: 'Max Width', group: 'Sizing', type: 'size',
     get: s => s.maxWidth, set: (el, v) => { el.style.maxWidth = v } },
+  { key: 'minWidth', label: 'Min Width', group: 'Sizing', type: 'size',
+    get: s => s.minWidth, set: (el, v) => { el.style.minWidth = v } },
   { key: 'minHeight', label: 'Min Height', group: 'Sizing', type: 'size',
     get: s => s.minHeight, set: (el, v) => { el.style.minHeight = v } },
+  { key: 'maxHeight', label: 'Max Height', group: 'Sizing', type: 'size',
+    get: s => s.maxHeight, set: (el, v) => { el.style.maxHeight = v } },
   // Padding
   { key: 'paddingTop', label: 'Top', group: 'Padding', type: 'size',
     get: s => s.paddingTop, set: (el, v) => { el.style.paddingTop = v } },
@@ -594,6 +598,13 @@ export function EditHelper() {
   const [showSettings, setShowSettings] = useState(false)
   const [panelSize, setPanelSize] = useState(320)
   const [floatPos, setFloatPos] = useState({ x: 80, y: 80 })
+  const [showGrid, setShowGrid] = useState(false)
+  const [showGridSettings, setShowGridSettings] = useState(false)
+  const [gridCols, setGridCols] = useState(12)
+  const [gridGutter, setGridGutter] = useState(16)
+  const [gridMargin, setGridMargin] = useState(24)
+  const [gridColor, setGridColor] = useState('#ff0066')
+  const [gridOpacity, setGridOpacity] = useState(10)
 
   const isHorizontal = panelPos === 'top' || panelPos === 'bottom'
 
@@ -759,8 +770,17 @@ export function EditHelper() {
     </div>
   )
 
+  const gridOverlay = showGrid && (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 9998, pointerEvents: 'none', display: 'flex', paddingLeft: gridMargin, paddingRight: gridMargin, boxSizing: 'border-box', gap: gridGutter }}>
+      {Array.from({ length: gridCols }).map((_, i) => (
+        <div key={i} style={{ flex: 1, height: '100%', backgroundColor: gridColor, opacity: gridOpacity / 100 }} />
+      ))}
+    </div>
+  )
+
   return (
     <div ref={wrapRef} style={{ position: 'absolute', top: 10, right: 10, zIndex: 9999 }}>
+      {gridOverlay}
       {/* Toggle button */}
       <button
         onClick={() => open ? handleClose() : setOpen(true)}
@@ -788,6 +808,42 @@ export function EditHelper() {
           >
             <span style={{ color: '#e4e4e7', letterSpacing: '0.1em', fontSize: 11 }}>◈ INSPECTOR</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              {/* Grid overlay */}
+              <div style={{ position: 'relative' }}>
+                <button
+                  onClick={() => { setShowGridSettings(p => !p); setShowSettings(false) }}
+                  title="Layout grid"
+                  style={{ background: 'none', border: 'none', color: showGrid ? '#f472b6' : (showGridSettings ? '#a5b4fc' : '#71717a'), cursor: 'pointer', fontSize: 13, lineHeight: 1, padding: '2px 4px' }}
+                >⊞</button>
+                {showGridSettings && (
+                  <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 4, background: '#27272a', border: '1px solid #3f3f46', borderRadius: 6, padding: 10, zIndex: 10001, minWidth: 180, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <div style={{ color: '#52525b', fontSize: 9, letterSpacing: '0.1em' }}>LAYOUT GRID</div>
+                    <button onClick={() => setShowGrid(p => !p)} style={{ background: showGrid ? 'rgba(244,114,182,0.15)' : 'rgba(99,102,241,0.1)', border: `1px solid ${showGrid ? '#f472b6' : '#3f3f46'}`, color: showGrid ? '#f472b6' : '#a1a1aa', borderRadius: 4, padding: '4px 8px', cursor: 'pointer', fontSize: 10, fontFamily: 'monospace' }}>
+                      {showGrid ? '◉ grid on' : '○ grid off'}
+                    </button>
+                    {[
+                      { label: 'Columns', value: gridCols, set: setGridCols, min: 1, max: 24, step: 1 },
+                      { label: 'Gutter px', value: gridGutter, set: setGridGutter, min: 0, max: 80, step: 2 },
+                      { label: 'Margin px', value: gridMargin, set: setGridMargin, min: 0, max: 200, step: 4 },
+                      { label: 'Opacity %', value: gridOpacity, set: setGridOpacity, min: 1, max: 50, step: 1 },
+                    ].map(({ label, value, set, min, max, step }) => (
+                      <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ color: '#71717a', fontSize: 9, fontFamily: 'monospace', width: 60, flexShrink: 0 }}>{label}</span>
+                        <input type="range" min={min} max={max} step={step} value={value}
+                          onChange={e => set(+e.target.value)}
+                          style={{ flex: 1, accentColor: '#f472b6', height: 4 }} />
+                        <span style={{ color: '#e4e4e7', fontSize: 9, fontFamily: 'monospace', width: 24, textAlign: 'right' }}>{value}</span>
+                      </div>
+                    ))}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ color: '#71717a', fontSize: 9, fontFamily: 'monospace', width: 60, flexShrink: 0 }}>Color</span>
+                      <input type="color" value={gridColor} onChange={e => setGridColor(e.target.value)}
+                        style={{ width: 24, height: 20, border: 'none', background: 'none', cursor: 'pointer', padding: 0 }} />
+                      <span style={{ color: '#a1a1aa', fontSize: 9, fontFamily: 'monospace' }}>{gridColor}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
               {/* Settings */}
               <div style={{ position: 'relative' }}>
                 <button
