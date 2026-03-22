@@ -307,3 +307,25 @@ All color pickers now use a canvas-based conversion instead of regex, so they co
 Letter-spacing now matches all other size controls: slider on top, then px / rem / tw inputs, then the Tailwind preset dropdown.
 
 ---
+
+## v0.2.5 Changes
+
+### Per-property reset
+
+Every property label turns purple when its value has been changed from the original. A **↺** button appears next to the label — click it to restore that property to the value it had when you first selected the element.
+
+### Sizing — Min Width and Max Height added
+
+The **Sizing** group now has all six controls: Width, Height, Max Width, Min Width, Min Height, Max Height.
+
+### Classes and Content — read-only by default
+
+The **CLASSES** and **CONTENT** fields are now read-only until you choose to edit them:
+
+- **copy** — copies the current value to your clipboard. A green `✓ copied` confirmation appears for 1.5 seconds.
+- **edit** — activates edit mode. A new editable input (purple border) appears on top; the original value stays visible below in grey as a reference.
+- **↺ reset** — restores the original value and exits edit mode.
+
+Switching to a different element automatically exits edit mode.
+
+---

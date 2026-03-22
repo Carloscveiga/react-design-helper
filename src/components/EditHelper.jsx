@@ -504,6 +504,13 @@ export function EditHelper() {
   const [origClassName, setOrigClassName] = useState('')
   const [contentEditActive, setContentEditActive] = useState(false)
   const [origContent, setOrigContent] = useState('')
+  const [copied, setCopied] = useState(null)
+
+  function copyText(text, type) {
+    navigator.clipboard.writeText(text)
+    setCopied(type)
+    setTimeout(() => setCopied(null), 1500)
+  }
   const [collapsed, setCollapsed] = useState(new Set())
   const [collapsedTree, setCollapsedTree] = useState(new Set())
   const prevHighlight = useRef(null)
@@ -738,8 +745,9 @@ export function EditHelper() {
       <div style={{ marginBottom: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
           <span style={{ color: '#52525b', fontSize: 9, letterSpacing: '0.1em' }}>CLASSES</span>
-          <div style={{ display: 'flex', gap: 4 }}>
-            <button onClick={() => navigator.clipboard.writeText(selectedNode.el.className)}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            {copied === 'classes' && <span style={{ color: '#4ade80', fontSize: 9, fontFamily: 'monospace' }}>✓ copied</span>}
+            <button onClick={() => copyText(selectedNode.el.className, 'classes')}
               style={{ background: 'none', border: '1px solid #3f3f46', color: '#71717a', fontSize: 9, fontFamily: 'monospace', borderRadius: 3, padding: '1px 6px', cursor: 'pointer' }}>copy</button>
             {!classEditActive
               ? <button onClick={() => { setOrigClassName(selectedNode.el.className); setClassEditActive(true) }}
@@ -774,7 +782,8 @@ export function EditHelper() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
             <span style={{ color: '#52525b', fontSize: 9, letterSpacing: '0.1em' }}>CONTENT</span>
             <div style={{ display: 'flex', gap: 4 }}>
-              <button onClick={() => navigator.clipboard.writeText(selectedNode.el.textContent ?? '')}
+              {copied === 'content' && <span style={{ color: '#4ade80', fontSize: 9, fontFamily: 'monospace' }}>✓ copied</span>}
+              <button onClick={() => copyText(selectedNode.el.textContent ?? '', 'content')}
                 style={{ background: 'none', border: '1px solid #3f3f46', color: '#71717a', fontSize: 9, fontFamily: 'monospace', borderRadius: 3, padding: '1px 6px', cursor: 'pointer' }}>copy</button>
               {!contentEditActive
                 ? <button onClick={() => { setOrigContent(selectedNode.el.textContent ?? ''); setContentEditActive(true) }}
