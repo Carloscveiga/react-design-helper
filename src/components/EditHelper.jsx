@@ -515,6 +515,7 @@ export function EditHelper() {
   const [collapsedTree, setCollapsedTree] = useState(new Set())
   const prevHighlight = useRef(null)
   const origValsMapRef = useRef(new Map())
+  const touchedMapRef = useRef(new Map())
 
   // Build tree when panel opens
   useEffect(() => {
@@ -581,6 +582,7 @@ export function EditHelper() {
       prevHighlight.current = null
     }
     origValsMapRef.current.clear()
+    touchedMapRef.current.clear()
     setOpen(false)
   }
 
@@ -588,6 +590,13 @@ export function EditHelper() {
     const node = nodes.find(n => n.id === selId)
     if (!node) return
     prop.set(node.el, value)
+    if (!touchedMapRef.current.has(node.id)) touchedMapRef.current.set(node.id, new Set())
+    const touched = touchedMapRef.current.get(node.id)
+    if (value === origVals[prop.key]) {
+      touched.delete(prop.key)
+    } else {
+      touched.add(prop.key)
+    }
     setVals(prev => ({ ...prev, [prop.key]: value }))
   }
 
@@ -718,7 +727,7 @@ export function EditHelper() {
             style={{
               paddingLeft: 4 + node.depth * 10,
               paddingTop: 3, paddingBottom: 3, paddingRight: 4,
-              color: node.id === selId ? '#a5b4fc' : '#71717a',
+              color: node.id === selId ? '#a5b4fc' : touchedMapRef.current.get(node.id)?.size ? '#c4b5fd' : '#71717a',
               background: node.id === selId ? 'rgba(99,102,241,0.12)' : 'transparent',
               cursor: 'pointer', borderRadius: 4,
               display: 'flex', alignItems: 'center', gap: 4, fontSize: 11,
@@ -734,6 +743,10 @@ export function EditHelper() {
             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {nodeLabel(node.el)}
             </span>
+            {touchedMapRef.current.get(node.id)?.size && node.id !== selId
+              ? <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#a78bfa', flexShrink: 0 }} />
+              : null
+            }
           </div>
         ))}
       </div>
@@ -818,6 +831,39 @@ export function EditHelper() {
       )}
 
       <div style={{ height: 1, background: '#3f3f46', marginBottom: 10 }} />
+
+      {/* CSS Diff panel */}
+      {(() => {
+        const toKebab = s => s.replace(/([A-Z])/g, m => `-${m.toLowerCase()}`)
+        const touched = touchedMapRef.current.get(selId) ?? new Set()
+        const dirty = PROPS.filter(p => vals[p.key] !== undefined && origVals[p.key] !== undefined && (vals[p.key] !== origVals[p.key] || touched.has(p.key)))
+        if (!dirty.length) return null
+        const origCss = dirty.map(p => `${toKebab(p.key)}: ${origVals[p.key]};`).join('\n')
+        const currCss = dirty.map(p => `${toKebab(p.key)}: ${vals[p.key]};`).join('\n')
+        const cellStyle = { flex: 1, background: '#18181b', borderRadius: 4, padding: '6px 8px', fontFamily: 'monospace', fontSize: 9, color: '#a1a1aa', whiteSpace: 'pre', overflowX: 'auto', lineHeight: 1.6 }
+        return (
+          <div style={{ marginBottom: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+              <span style={{ color: '#52525b', fontSize: 9, letterSpacing: '0.1em' }}>CHANGES</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                {copied === 'css' && <span style={{ color: '#4ade80', fontSize: 9, fontFamily: 'monospace' }}>✓ copied</span>}
+                <button onClick={() => copyText(currCss, 'css')}
+                  style={{ background: 'none', border: '1px solid #3f3f46', color: '#71717a', fontSize: 9, fontFamily: 'monospace', borderRadius: 3, padding: '1px 6px', cursor: 'pointer' }}>copy css</button>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <div style={{ ...cellStyle, flex: 1 }}>
+                <div style={{ color: '#52525b', fontSize: 8, marginBottom: 4, letterSpacing: '0.08em' }}>ORIGINAL</div>
+                <span style={{ color: '#71717a' }}>{origCss}</span>
+              </div>
+              <div style={{ ...cellStyle, flex: 1 }}>
+                <div style={{ color: '#a78bfa', fontSize: 8, marginBottom: 4, letterSpacing: '0.08em' }}>CURRENT</div>
+                <span style={{ color: '#c4b5fd' }}>{currCss}</span>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
 
       {GROUPS.map(group => {
         const groupProps = PROPS.filter(p => p.group === group && (!p.cond || p.cond(computedStyles)))

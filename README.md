@@ -308,7 +308,7 @@ Letter-spacing now matches all other size controls: slider on top, then px / rem
 
 ---
 
-## v0.2.6 Changes
+## v0.2.7 Changes
 
 ### Per-property reset
 
