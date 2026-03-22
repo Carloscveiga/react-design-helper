@@ -411,13 +411,18 @@ function ColorAlphaInput({ value, onChange }) {
   )
 }
 
-function PropRow({ prop, value, onChange }) {
+function PropRow({ prop, value, origVal, onChange }) {
   const isSize = prop.type === 'size' || prop.type === 'tracking' || prop.type === 'font' || prop.type === 'color-alpha'
+  const isDirty = value !== origVal
   return (
     <div style={{ display: 'flex', alignItems: isSize ? 'flex-start' : 'center', gap: 6, padding: isSize ? '8px 0' : '3px 0', minHeight: 26 }}>
-      <span style={{ width: 74, fontSize: 10, color: '#71717a', fontFamily: 'monospace', flexShrink: 0, paddingTop: isSize ? 5 : 0 }}>
-        {prop.label}
-      </span>
+      <div style={{ width: 74, flexShrink: 0, display: 'flex', alignItems: 'center', gap: 3, paddingTop: isSize ? 5 : 0 }}>
+        <span style={{ fontSize: 10, color: isDirty ? '#a78bfa' : '#71717a', fontFamily: 'monospace' }}>{prop.label}</span>
+        {isDirty && (
+          <button onClick={() => onChange(origVal)} title="Reset to original"
+            style={{ background: 'none', border: 'none', color: '#6366f1', cursor: 'pointer', fontSize: 10, padding: 0, lineHeight: 1, flexShrink: 0 }}>↺</button>
+        )}
+      </div>
 
       {prop.type === 'color-alpha' && (
         <ColorAlphaInput value={value} onChange={onChange} />
@@ -494,6 +499,11 @@ export function EditHelper() {
   const [nodes, setNodes] = useState([])
   const [selId, setSelId] = useState(null)
   const [vals, setVals] = useState({})
+  const [origVals, setOrigVals] = useState({})
+  const [classEditActive, setClassEditActive] = useState(false)
+  const [origClassName, setOrigClassName] = useState('')
+  const [contentEditActive, setContentEditActive] = useState(false)
+  const [origContent, setOrigContent] = useState('')
   const [collapsed, setCollapsed] = useState(new Set())
   const [collapsedTree, setCollapsedTree] = useState(new Set())
   const prevHighlight = useRef(null)
@@ -543,7 +553,13 @@ export function EditHelper() {
   function selectNode(node, nodeList) {
     highlight(node.el)
     setSelId(node.id)
-    setVals(readVals(node.el))
+    const v = readVals(node.el)
+    setVals(v)
+    setOrigVals(v)
+    setClassEditActive(false)
+    setOrigClassName('')
+    setContentEditActive(false)
+    setOrigContent('')
     if (nodeList) setNodes(nodeList)
   }
 
@@ -720,27 +736,69 @@ export function EditHelper() {
 
       {/* Classes */}
       <div style={{ marginBottom: 10 }}>
-        <div style={{ color: '#52525b', fontSize: 9, letterSpacing: '0.1em', marginBottom: 4 }}>CLASSES</div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+          <span style={{ color: '#52525b', fontSize: 9, letterSpacing: '0.1em' }}>CLASSES</span>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button onClick={() => navigator.clipboard.writeText(selectedNode.el.className)}
+              style={{ background: 'none', border: '1px solid #3f3f46', color: '#71717a', fontSize: 9, fontFamily: 'monospace', borderRadius: 3, padding: '1px 6px', cursor: 'pointer' }}>copy</button>
+            {!classEditActive
+              ? <button onClick={() => { setOrigClassName(selectedNode.el.className); setClassEditActive(true) }}
+                  style={{ background: 'none', border: '1px solid #3f3f46', color: '#71717a', fontSize: 9, fontFamily: 'monospace', borderRadius: 3, padding: '1px 6px', cursor: 'pointer' }}>edit</button>
+              : <button onClick={() => { selectedNode.el.className = origClassName; setClassEditActive(false) }}
+                  style={{ background: 'none', border: '1px solid #3f3f46', color: '#f87171', fontSize: 9, fontFamily: 'monospace', borderRadius: 3, padding: '1px 6px', cursor: 'pointer' }}>↺ reset</button>
+            }
+          </div>
+        </div>
+        {classEditActive && (
+          <input
+            type="text"
+            defaultValue={origClassName}
+            key={selectedNode.id + '-class-edit'}
+            onBlur={e => { selectedNode.el.className = e.target.value }}
+            onKeyDown={e => { if (e.key === 'Enter') { selectedNode.el.className = e.currentTarget.value; e.currentTarget.blur() } }}
+            style={{ width: '100%', background: '#27272a', color: '#e4e4e7', border: '1px solid #6366f1', borderRadius: 4, fontSize: 10, fontFamily: 'monospace', padding: '4px 6px', boxSizing: 'border-box', marginBottom: 4 }}
+          />
+        )}
         <input
           type="text"
+          readOnly
           defaultValue={selectedNode.el.className}
           key={selectedNode.id + '-class'}
-          onBlur={e => { selectedNode.el.className = e.target.value }}
-          onKeyDown={e => { if (e.key === 'Enter') { selectedNode.el.className = e.currentTarget.value; e.currentTarget.blur() } }}
-          style={{ width: '100%', background: '#27272a', color: '#e4e4e7', border: '1px solid #3f3f46', borderRadius: 4, fontSize: 10, fontFamily: 'monospace', padding: '4px 6px', boxSizing: 'border-box' }}
+          style={{ width: '100%', background: '#27272a', color: classEditActive ? '#52525b' : '#71717a', border: '1px solid #3f3f46', borderRadius: 4, fontSize: 10, fontFamily: 'monospace', padding: '4px 6px', boxSizing: 'border-box', cursor: 'default' }}
         />
       </div>
 
       {/* Text content */}
       {selectedNode.el.childElementCount === 0 && selectedNode.el.textContent?.trim() !== '' && (
         <div style={{ marginBottom: 10 }}>
-          <div style={{ color: '#52525b', fontSize: 9, letterSpacing: '0.1em', marginBottom: 4 }}>CONTENT</div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+            <span style={{ color: '#52525b', fontSize: 9, letterSpacing: '0.1em' }}>CONTENT</span>
+            <div style={{ display: 'flex', gap: 4 }}>
+              <button onClick={() => navigator.clipboard.writeText(selectedNode.el.textContent ?? '')}
+                style={{ background: 'none', border: '1px solid #3f3f46', color: '#71717a', fontSize: 9, fontFamily: 'monospace', borderRadius: 3, padding: '1px 6px', cursor: 'pointer' }}>copy</button>
+              {!contentEditActive
+                ? <button onClick={() => { setOrigContent(selectedNode.el.textContent ?? ''); setContentEditActive(true) }}
+                    style={{ background: 'none', border: '1px solid #3f3f46', color: '#71717a', fontSize: 9, fontFamily: 'monospace', borderRadius: 3, padding: '1px 6px', cursor: 'pointer' }}>edit</button>
+                : <button onClick={() => { selectedNode.el.textContent = origContent; setContentEditActive(false) }}
+                    style={{ background: 'none', border: '1px solid #3f3f46', color: '#f87171', fontSize: 9, fontFamily: 'monospace', borderRadius: 3, padding: '1px 6px', cursor: 'pointer' }}>↺ reset</button>
+              }
+            </div>
+          </div>
+          {contentEditActive && (
+            <textarea
+              defaultValue={origContent}
+              key={selectedNode.id + '-content-edit'}
+              onBlur={e => { selectedNode.el.textContent = e.target.value }}
+              rows={2}
+              style={{ width: '100%', background: '#27272a', color: '#e4e4e7', border: '1px solid #6366f1', borderRadius: 4, fontSize: 10, fontFamily: 'monospace', padding: '4px 6px', boxSizing: 'border-box', resize: 'vertical', marginBottom: 4 }}
+            />
+          )}
           <textarea
+            readOnly
             defaultValue={selectedNode.el.textContent ?? ''}
             key={selectedNode.id + '-content'}
-            onBlur={e => { selectedNode.el.textContent = e.target.value }}
             rows={2}
-            style={{ width: '100%', background: '#27272a', color: '#e4e4e7', border: '1px solid #3f3f46', borderRadius: 4, fontSize: 10, fontFamily: 'monospace', padding: '4px 6px', boxSizing: 'border-box', resize: 'vertical' }}
+            style={{ width: '100%', background: '#27272a', color: contentEditActive ? '#52525b' : '#71717a', border: '1px solid #3f3f46', borderRadius: 4, fontSize: 10, fontFamily: 'monospace', padding: '4px 6px', boxSizing: 'border-box', resize: 'none', cursor: 'default' }}
           />
         </div>
       )}
@@ -760,7 +818,7 @@ export function EditHelper() {
             {!isCollapsed && (
               <div style={{ paddingLeft: 2 }}>
                 {groupProps.map(prop => (
-                  <PropRow key={prop.key} prop={prop} value={vals[prop.key] ?? ''} onChange={v => applyProp(prop, v)} />
+                  <PropRow key={prop.key} prop={prop} value={vals[prop.key] ?? ''} origVal={origVals[prop.key] ?? ''} onChange={v => applyProp(prop, v)} />
                 ))}
               </div>
             )}
