@@ -514,6 +514,7 @@ export function EditHelper() {
   const [collapsed, setCollapsed] = useState(new Set())
   const [collapsedTree, setCollapsedTree] = useState(new Set())
   const prevHighlight = useRef(null)
+  const origValsMapRef = useRef(new Map())
 
   // Build tree when panel opens
   useEffect(() => {
@@ -562,7 +563,10 @@ export function EditHelper() {
     setSelId(node.id)
     const v = readVals(node.el)
     setVals(v)
-    setOrigVals(v)
+    if (!origValsMapRef.current.has(node.id)) {
+      origValsMapRef.current.set(node.id, v)
+    }
+    setOrigVals(origValsMapRef.current.get(node.id))
     setClassEditActive(false)
     setOrigClassName('')
     setContentEditActive(false)
@@ -576,6 +580,7 @@ export function EditHelper() {
       prevHighlight.current.el.style.outlineOffset = ''
       prevHighlight.current = null
     }
+    origValsMapRef.current.clear()
     setOpen(false)
   }
 
