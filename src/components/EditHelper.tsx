@@ -49,6 +49,24 @@ interface Prop {
 
 const PROPS: Prop[] = [
   // Layout
+  { key: 'position', label: 'Position', group: 'Layout', type: 'select',
+    options: ['static', 'relative', 'absolute', 'fixed', 'sticky'],
+    get: s => s.position, set: (el, v) => { el.style.position = v } },
+  { key: 'top', label: 'Top', group: 'Layout', type: 'size',
+    cond: s => ['absolute', 'fixed', 'sticky'].includes(s.position),
+    get: s => s.top, set: (el, v) => { el.style.top = v } },
+  { key: 'right', label: 'Right', group: 'Layout', type: 'size',
+    cond: s => ['absolute', 'fixed', 'sticky'].includes(s.position),
+    get: s => s.right, set: (el, v) => { el.style.right = v } },
+  { key: 'bottom', label: 'Bottom', group: 'Layout', type: 'size',
+    cond: s => ['absolute', 'fixed', 'sticky'].includes(s.position),
+    get: s => s.bottom, set: (el, v) => { el.style.bottom = v } },
+  { key: 'left', label: 'Left', group: 'Layout', type: 'size',
+    cond: s => ['absolute', 'fixed', 'sticky'].includes(s.position),
+    get: s => s.left, set: (el, v) => { el.style.left = v } },
+  { key: 'zIndex', label: 'Z-Index', group: 'Layout', type: 'text',
+    cond: s => s.position !== 'static',
+    get: s => s.zIndex, set: (el, v) => { el.style.zIndex = v } },
   { key: 'display', label: 'Display', group: 'Layout', type: 'select',
     options: ['block', 'flex', 'inline-flex', 'inline', 'inline-block', 'grid', 'none'],
     get: s => s.display, set: (el, v) => { el.style.display = v } },
@@ -649,6 +667,57 @@ export function EditHelper() {
     })
   }
 
+  function moveNode(dir: 'up' | 'down') {
+    const node = nodes.find(n => n.id === selId)
+    if (!node) return
+    const el = node.el
+    const parent = el.parentElement
+    if (!parent) return
+    if (dir === 'up') {
+      let prev = el.previousElementSibling as HTMLElement | null
+      while (prev && prev === wrapRef.current) prev = prev.previousElementSibling as HTMLElement | null
+      if (prev) parent.insertBefore(el, prev)
+    } else {
+      let next = el.nextElementSibling as HTMLElement | null
+      while (next && next === wrapRef.current) next = next.nextElementSibling as HTMLElement | null
+      if (next) parent.insertBefore(next, el)
+    }
+    const rootParent = wrapRef.current?.parentElement
+    if (!rootParent) return
+    const children: FlatNode[] = []
+    walk(rootParent, wrapRef.current!, 1, children, { n: 1 })
+    const all: FlatNode[] = [{ id: 0, el: rootParent, depth: 0 }, ...children]
+    all.forEach((n, i) => { n.hasChildren = i < all.length - 1 && all[i + 1].depth > n.depth })
+    const moved = all.find(n => n.el === el)
+    if (moved) selectNode(moved, all); else setNodes(all)
+  }
+
+  const [addElOpen, setAddElOpen] = useState(false)
+
+  const ADDABLE_TAGS = ['div', 'section', 'p', 'h1', 'h2', 'h3', 'span', 'button', 'ul', 'li', 'img']
+
+  function addElement(tag: string) {
+    const node = nodes.find(n => n.id === selId)
+    if (!node) return
+    const el = document.createElement(tag)
+    if (['p', 'h1', 'h2', 'h3'].includes(tag)) el.textContent = `New ${tag}`
+    if (tag === 'span') el.textContent = 'new span'
+    if (tag === 'button') el.textContent = 'Button'
+    if (tag === 'div' || tag === 'section') el.style.minHeight = '32px'
+    node.el.appendChild(el)
+    // Rebuild tree and auto-select the new element
+    if (!wrapRef.current) return
+    const parent = wrapRef.current.parentElement
+    if (!parent) return
+    const children: FlatNode[] = []
+    walk(parent, wrapRef.current, 1, children, { n: 1 })
+    const all: FlatNode[] = [{ id: 0, el: parent, depth: 0 }, ...children]
+    all.forEach((n, i) => { n.hasChildren = i < all.length - 1 && all[i + 1].depth > n.depth })
+    const newNode = all.find(n => n.el === el)
+    if (newNode) selectNode(newNode, all); else setNodes(all)
+    setAddElOpen(false)
+  }
+
   const [panelPos, setPanelPos] = useState<'right' | 'left' | 'top' | 'bottom' | 'float'>('right')
   const [showSettings, setShowSettings] = useState(false)
   const [panelSize, setPanelSize] = useState(320)
@@ -736,7 +805,28 @@ export function EditHelper() {
       ? { width: 220, borderRight: '1px solid #3f3f46', overflowY: 'auto', padding: '8px 10px', flexShrink: 0 }
       : { padding: '8px 14px 4px' }
     }>
-      <div style={{ color: '#52525b', letterSpacing: '0.1em', fontSize: 9, marginBottom: 6 }}>TREE</div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+        <div style={{ color: '#52525b', letterSpacing: '0.1em', fontSize: 9 }}>TREE</div>
+        {selId !== null && (
+          <div style={{ position: 'relative' }}>
+            <button
+              onClick={() => setAddElOpen(p => !p)}
+              title="Add child element"
+              style={{ background: 'none', border: '1px solid #3f3f46', color: '#71717a', fontSize: 9, fontFamily: 'monospace', borderRadius: 3, padding: '1px 6px', cursor: 'pointer' }}>+ add child</button>
+            {addElOpen && (
+              <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 4, background: '#27272a', border: '1px solid #3f3f46', borderRadius: 6, padding: 4, zIndex: 10002, minWidth: 100 }}>
+                {ADDABLE_TAGS.map(tag => (
+                  <button key={tag} onClick={() => addElement(tag)}
+                    style={{ display: 'block', width: '100%', background: 'none', border: 'none', color: '#a1a1aa', padding: '4px 10px', cursor: 'pointer', fontSize: 10, fontFamily: 'monospace', borderRadius: 4, textAlign: 'left' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'rgba(99,102,241,0.15)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+                  >&lt;{tag}&gt;</button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
       <div style={{ overflowY: 'auto', maxHeight: isHorizontal ? 'none' : 200 }}>
         {getVisibleNodes().map(node => (
           <div
@@ -758,9 +848,36 @@ export function EditHelper() {
                 </span>
               : <span style={{ width: 12, flexShrink: 0 }} />
             }
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
               {nodeLabel(node.el)}
             </span>
+            {node.id === selId && node.depth > 0 && (
+              <>
+                <button onClick={e => {
+                  e.stopPropagation()
+                  const parent = node.el.parentElement
+                  node.el.remove()
+                  const rootParent = wrapRef.current?.parentElement
+                  if (!rootParent) return
+                  const children: FlatNode[] = []
+                  walk(rootParent, wrapRef.current!, 1, children, { n: 1 })
+                  const all: FlatNode[] = [{ id: 0, el: rootParent, depth: 0 }, ...children]
+                  all.forEach((n, i) => { n.hasChildren = i < all.length - 1 && all[i + 1].depth > n.depth })
+                  const parentNode = all.find(n => n.el === parent)
+                  if (parentNode) selectNode(parentNode, all); else setNodes(all)
+                }}
+                  title="Delete element"
+                  style={{ background: '#27272a', border: '1px solid #3f3f46', color: '#f87171', cursor: 'pointer', fontSize: 11, padding: '1px 5px', lineHeight: 1, flexShrink: 0, borderRadius: 3 }}>✕</button>
+                <button onClick={e => { e.stopPropagation(); moveNode('up') }}
+                  disabled={!node.el.previousElementSibling || node.el.previousElementSibling === wrapRef.current}
+                  title="Move up"
+                  style={{ background: '#27272a', border: '1px solid #3f3f46', color: '#a1a1aa', cursor: 'pointer', fontSize: 11, padding: '1px 5px', lineHeight: 1, flexShrink: 0, borderRadius: 3 }}>↑</button>
+                <button onClick={e => { e.stopPropagation(); moveNode('down') }}
+                  disabled={!node.el.nextElementSibling || node.el.nextElementSibling === wrapRef.current}
+                  title="Move down"
+                  style={{ background: '#27272a', border: '1px solid #3f3f46', color: '#a1a1aa', cursor: 'pointer', fontSize: 11, padding: '1px 5px', lineHeight: 1, flexShrink: 0, borderRadius: 3 }}>↓</button>
+              </>
+            )}
             {touchedMapRef.current.get(node.id)?.size && node.id !== selId
               ? <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#a78bfa', flexShrink: 0 }} />
               : null

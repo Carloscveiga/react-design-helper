@@ -86,13 +86,20 @@ Click **⚙ inspect** → a panel slides in from the right with:
 - **Element tree**  every child element listed with indentation, click any to select it
 - **Live highlight**  selected element gets a purple outline on screen
 - **Property groups**  contextual controls for the selected element:
-  - Layout (display, flex direction, justify, align, gap)
-  - Sizing (width, height, max-width, min-height)
-  - Padding / Margin
-  - Typography (font size, weight, line height, text align, tracking)
-  - Colors (background color, text color, background image)
+  - Layout (position, top/right/bottom/left, z-index, display, flex direction, justify, align, gap)
+  - Sizing (width, height, max-width, min-width, min-height, max-height)
+  - Padding / Margin (all four sides, with slider + px + rem + tw)
+  - Typography (font family, size, weight, line height, text align, tracking, text color)
+  - Background (background color with transparency, background image, size, position, repeat)
   - Border (radius, width, color)
   - Effects (opacity, box shadow)
+- **Add child element** — append a new DOM element directly from the tree
+- **Reorder elements** — move any node up or down within its siblings
+- **Delete element** — remove any node from the DOM instantly
+- **Layout grid overlay** — configurable column guides overlaid on the page
+- **Per-property reset** — restore any changed value to its original with one click
+- **CSS diff panel** — side-by-side original vs current CSS for all changed properties
+- **Copy CSS** — copy the changed properties as a CSS block to your clipboard
 
 All changes apply instantly as inline styles. Drop it in any section, tweak, close when done.
 
@@ -327,5 +334,34 @@ The **CLASSES** and **CONTENT** fields are now read-only until you choose to edi
 - **↺ reset** — restores the original value and exits edit mode.
 
 Switching to a different element automatically exits edit mode.
+
+---
+
+
+## v0.2.8 Changes
+
+### Position control
+
+The **Layout** group now has a **Position** row at the top:
+
+- Options: `static`, `relative`, `absolute`, `fixed`, `sticky`
+- When set to `absolute`, `fixed`, or `sticky` — four additional size controls appear: **Top**, **Right**, **Bottom**, **Left** (each with slider, px, rem, and tw inputs)
+- **Z-Index** also appears whenever position is anything other than `static`
+
+### Add child element
+
+In the element tree, when a node is selected a **+ add child** button appears in the tree header. Click it to open a tag picker and append a new element as a child of the selected node:
+
+`div` `section` `p` `h1` `h2` `h3` `span` `button` `ul` `li` `img`
+
+The new element is appended, the tree re-walks, and the new node is auto-selected so you can style it immediately.
+
+### Reorder elements in the tree
+
+When a node is selected, **↑** and **↓** buttons appear inline on its tree row. Click them to move the element up or down among its siblings. The element can never move outside its parent. Buttons are disabled when the element is already at the top or bottom of its sibling list.
+
+### Delete element
+
+A red **✕** button appears on the selected tree row (depth > 0 — the root cannot be deleted). Click it to remove the element from the DOM. The tree rebuilds and the parent node is auto-selected.
 
 ---
