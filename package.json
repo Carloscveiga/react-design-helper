@@ -1,6 +1,6 @@
 {
   "name": "react-design-helper",
-  "version": "0.2.8",
+  "version": "0.3.0",
   "description": "A drop-in React inspector component for live-editing styles in the browser — no DevTools, no Figma, just drop it in.",
   "type": "module",
   "main": "dist/index.js",
