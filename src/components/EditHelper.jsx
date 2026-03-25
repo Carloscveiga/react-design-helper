@@ -529,7 +529,7 @@ export function EditHelper() {
     setCopied(type)
     setTimeout(() => setCopied(null), 1500)
   }
-  const [collapsed, setCollapsed] = useState(new Set())
+  const [collapsed, setCollapsed] = useState(new Set(['Sizing', 'Padding', 'Margin', 'Typography', 'Background', 'Border', 'Effects']))
   const [collapsedTree, setCollapsedTree] = useState(new Set())
   const prevHighlight = useRef(null)
   const origValsMapRef = useRef(new Map())
@@ -699,6 +699,7 @@ export function EditHelper() {
     setAddElOpen(false)
   }
 
+  const [treeHeight, setTreeHeight] = useState(200)
   const [panelPos, setPanelPos] = useState('right')
   const [showSettings, setShowSettings] = useState(false)
   const [panelSize, setPanelSize] = useState(320)
@@ -747,6 +748,16 @@ export function EditHelper() {
     function onEnd() { window.removeEventListener('touchmove', onMove); window.removeEventListener('touchend', onEnd) }
     window.addEventListener('touchmove', onMove, { passive: false })
     window.addEventListener('touchend', onEnd)
+  }
+
+  function startTreeResize(e) {
+    e.preventDefault()
+    const startY = e.clientY
+    const startH = treeHeight
+    function onMove(e) { setTreeHeight(Math.max(80, Math.min(600, startH + e.clientY - startY))) }
+    function onUp() { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp) }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
   }
 
   function startResize(e) {
@@ -808,7 +819,7 @@ export function EditHelper() {
           </div>
         )}
       </div>
-      <div style={{ overflowY: 'auto', maxHeight: isHorizontal ? 'none' : 200 }}>
+      <div style={{ overflowY: 'auto', height: isHorizontal ? 'auto' : treeHeight }}>
         {getVisibleNodes().map(node => (
           <div
             key={node.id}
@@ -866,6 +877,14 @@ export function EditHelper() {
           </div>
         ))}
       </div>
+      {!isHorizontal && (
+        <div
+          onMouseDown={startTreeResize}
+          style={{ height: 6, cursor: 'ns-resize', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '2px 0' }}
+        >
+          <div style={{ width: 32, height: 2, borderRadius: 2, background: '#3f3f46' }} />
+        </div>
+      )}
     </div>
   )
 
