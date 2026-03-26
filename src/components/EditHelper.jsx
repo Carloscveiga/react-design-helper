@@ -69,6 +69,24 @@ const PROPS = [
   { key: 'gap', label: 'Gap', group: 'Layout', type: 'size',
     cond: s => s.display.includes('flex') || s.display === 'grid',
     get: s => `${px(s.gap)}px`, set: (el, v) => { el.style.gap = v } },
+  { key: 'widthKeyword', label: 'W Fill', group: 'Layout', type: 'select',
+    options: ['—', 'auto', '100%', '100vw', '100svw', 'fit-content', 'min-content', 'max-content'],
+    get: (_s, el) => { const v = el.style.width; return ['auto','100%','100vw','100svw','fit-content','min-content','max-content'].includes(v) ? v : '—' },
+    set: (el, v) => { el.style.width = v === '—' ? '' : v } },
+  { key: 'heightKeyword', label: 'H Fill', group: 'Layout', type: 'select',
+    options: ['—', 'auto', '100%', '100vh', '100svh', 'fit-content', 'min-content', 'max-content'],
+    get: (_s, el) => { const v = el.style.height; return ['auto','100%','100vh','100svh','fit-content','min-content','max-content'].includes(v) ? v : '—' },
+    set: (el, v) => { el.style.height = v === '—' ? '' : v } },
+  { key: 'rotation', label: 'Rotation', group: 'Layout', type: 'rotation',
+    get: s => {
+      const t = s.transform
+      if (!t || t === 'none') return '0'
+      const m = t.match(/matrix\(([^)]+)\)/)
+      if (!m) return '0'
+      const [a, b] = m[1].split(',').map(Number)
+      return String(Math.round(Math.atan2(b, a) * 180 / Math.PI))
+    },
+    set: (el, v) => { el.style.transform = `rotate(${v}deg)` } },
   // Sizing
   { key: 'width', label: 'Width', group: 'Sizing', type: 'size',
     get: s => s.width, set: (el, v) => { el.style.width = v } },
@@ -310,6 +328,23 @@ function TrackingInput({ value, onChange }) {
   )
 }
 
+function RotationInput({ value, onChange }) {
+  const deg = parseFloat(value) || 0
+  return (
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <input type="range" min={-180} max={180} value={deg}
+        onChange={e => onChange(e.target.value)}
+        style={{ width: '100%', accentColor: '#6366f1' }} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <input type="number" value={deg} min={-180} max={180}
+          onChange={e => onChange(e.target.value)}
+          style={{ width: 56, background: '#18181b', border: '1px solid #3f3f46', color: '#e4e4e7', borderRadius: 4, padding: '2px 6px', fontSize: 10, fontFamily: 'monospace' }} />
+        <span style={{ color: '#71717a', fontSize: 10 }}>deg</span>
+      </div>
+    </div>
+  )
+}
+
 function BgImageInput({ value, onChange }) {
   const fileRef = useRef(null)
   const rawUrl = value && value !== 'none'
@@ -430,7 +465,7 @@ function ColorAlphaInput({ value, onChange }) {
 }
 
 function PropRow({ prop, value, origVal, onChange }) {
-  const isSize = prop.type === 'size' || prop.type === 'tracking' || prop.type === 'font' || prop.type === 'color-alpha'
+  const isSize = prop.type === 'size' || prop.type === 'tracking' || prop.type === 'font' || prop.type === 'color-alpha' || prop.type === 'rotation'
   const isDirty = value !== origVal
   return (
     <div style={{ display: 'flex', alignItems: isSize ? 'flex-start' : 'center', gap: 6, padding: isSize ? '8px 0' : '3px 0', minHeight: 26 }}>
@@ -493,6 +528,10 @@ function PropRow({ prop, value, origVal, onChange }) {
 
       {prop.type === 'font' && (
         <FontInput value={value} onChange={onChange} />
+      )}
+
+      {prop.type === 'rotation' && (
+        <RotationInput value={value} onChange={onChange} />
       )}
     </div>
   )
@@ -564,7 +603,7 @@ export function EditHelper() {
   function readVals(el) {
     const s = getComputedStyle(el)
     const out = {}
-    PROPS.forEach(p => { out[p.key] = p.get(s) })
+    PROPS.forEach(p => { out[p.key] = p.get(s, el) })
     return out
   }
 
