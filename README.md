@@ -86,7 +86,7 @@ Click **⚙ inspect** → a panel slides in from the right with:
 - **Element tree**  every child element listed with indentation, click any to select it
 - **Live highlight**  selected element gets a purple outline on screen
 - **Property groups**  contextual controls for the selected element:
-  - Layout (position, top/right/bottom/left, z-index, display, flex direction, justify, align, gap)
+  - Layout (position, top/right/bottom/left, z-index, display, flex direction, justify, align, gap, W/H fill presets, rotation)
   - Sizing (width, height, max-width, min-width, min-height, max-height)
   - Padding / Margin (all four sides, with slider + px + rem + tw)
   - Typography (font family, size, weight, line height, text align, tracking, text color)
@@ -363,5 +363,43 @@ When a node is selected, **↑** and **↓** buttons appear inline on its tree r
 ### Delete element
 
 A red **✕** button appears on the selected tree row (depth > 0 — the root cannot be deleted). Click it to remove the element from the DOM. The tree rebuilds and the parent node is auto-selected.
+
+---
+
+## v0.3.1 Changes
+
+### W Fill / H Fill presets
+
+Two new select rows in the **Layout** group let you apply CSS size keywords without typing:
+
+| Option | CSS applied |
+|---|---|
+| — | Clears the inline style (Sizing sliders take over) |
+| auto | `width/height: auto` |
+| 100% | `width/height: 100%` |
+| 100vw / 100vh | Viewport-relative full size |
+| 100svw / 100svh | Small viewport units |
+| fit-content | Shrinks to content size |
+| min-content | Minimum intrinsic size |
+| max-content | Maximum intrinsic size |
+
+Selecting `—` removes the keyword and hands control back to the px/rem/tw sliders in Sizing.
+
+### Rotation
+
+A **Rotation** control is now in the **Layout** group:
+
+- **Slider** — drag from −180° to 180°
+- **Degree input** — type any value directly
+- Reads the current rotation from the computed transform matrix — correctly shows the value even when set via Tailwind
+- Sets `transform: rotate(Xdeg)` as an inline style
+
+### Resizable tree panel
+
+The element tree now has a drag handle at its bottom edge. Drag it vertically to resize between 80px and 600px. Hidden in horizontal (top/bottom) panel mode where the tree fills its own column.
+
+### Sections collapsed by default
+
+All property groups except **Layout** now start collapsed.
 
 ---
